@@ -425,6 +425,9 @@ Out[44]:
 以相似度为准，找出相似度最高的歌曲并向用户推荐
 显然，这个算法的第2条是计算密集型的任务，当歌曲数目较多时，显然计算量非常大。所以这里我们再一次缩减曲库：
 
+<img width="700" alt="无标题" src="https://user-images.githubusercontent.com/46430934/143232789-b6b2059c-a1e6-4a90-9e7b-3bfa6ac43e8d.png">
+
+
 In [45]:
 
 song_count_subset = song_count_df.head(n=5000) # 选择最流行的5000首歌
