@@ -12,11 +12,11 @@ user_playcount_df.csv  每个用户播放歌曲的总次数  1019319  101w
 
 song_playcount_df.csv  每首歌被播放的总次数   384547  38w
 
-triplet_dataset_sub_song.csv   user_playcount_df播放前10w用户+song_playcount_df播放前3w的歌曲筛选后的原数据集的子集
+triplet_dataset_sub_song.csv   user_playcount_df播放前10w用户+song_playcount_df  播放前3w的歌曲筛选后的原数据集的子集
 
 track_metadata.db  音乐详细信息
 
-track_metadata_df_sub.csv  在triplet_dataset_sub_song中的歌曲信息子集
+track_metadata_df_sub.csv  在triplet_dataset_sub_song中的歌曲信息子集 --- 修改参数后需要重新计算
 
 搜索“改进”
 
