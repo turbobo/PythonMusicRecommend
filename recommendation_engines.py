@@ -364,7 +364,11 @@ from sklearn.model_selection import train_test_split
 
 # In[9]:
 
-
+# x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
+# x，y是原始的数据集。x_train,y_train 是原始数据集划分出来作为训练模型的，fit模型的时候用。
+# x_test,y_test 这部分的数据不参与模型的训练，而是用于评价训练出来的模型好坏，score评分的时候用。
+# test_size=0.2 测试集的划分比例 -- 测试集占总数据集的 0.4，剩下0.6就是训练集
+# random_state=0 随机种子，如果随机种子一样，则随机生成的数据集是相同的
 triplet_dataset_sub_song_merged_set = triplet_dataset_sub_song_merged
 train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_set, test_size = 0.40, random_state=0)
 
