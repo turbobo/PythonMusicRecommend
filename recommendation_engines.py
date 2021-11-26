@@ -26,10 +26,11 @@ data_home = './'
 
 # In[2]:
 
-
+# 这个数据大概包含了大约1019319用户对384547首歌的48373585条播放记录。
 triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt', 
                               nrows=10000,sep='\t', header=None, 
                               names=['user','song','play_count'])
+# triplet_dataset_all = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt')
 
 
 # In[3]:
@@ -43,6 +44,13 @@ triplet_dataset.head(n=10)
 # In[5]:
 
 # 统计 用户-播放歌曲次数
+# 对于这样规模大小的数据集，我们首先要做的是有多少用户(或者歌曲)是我们应该要考虑的。
+# 在原始数据集中，有大约100万的用户，但是这里面是不是所有用户我们都需要纳入考虑呢？
+# 比如说，如果20%的用户的歌曲播放了占了80%的总体播放量，那么其实我们只需要考虑这20%用户就差不多了。
+# 一般来说，我们统计一下播放量的累积求和就可以知道多少用户占了80%的总体播放量。
+# 不过鉴于数据量如此之大，pandas提供的累积求和功能会出问题。
+# 所以我们必须自己一行行地读取这个文件，一部分一部分地来完成这项工作：
+
 # output_dict = {}
 # with open(data_home+'train_triplets.txt') as f:
 #     for line_number, line in enumerate(f):
@@ -108,15 +116,24 @@ song_count_df.head(10)
 
 # In[15]:
 
-# 播放量前10w的用户的总播放量  占  总播放量的  40.88%
+# 有了这两份数据，我们首要的就是要找到前多少用户占了40%的总体播放量。
+# 这个"40%"是我们随机选的一个值，大家在实际的工作中可以自己选择这个数值，重点是控制数据集的大小。
+# 当然，如果有高效的Presto(支持HiveQL，但纯内存计算)集群的话，在整体数据集上统计这样的数据也会很快。
+# 就我们这个数据集，大约前100,000用户的播放量占据了总体的40%。
+# 播放量前10w的用户的总播放量  占  总播放量(138680243次播放)的  40.88%  ==> 10%的用户占据了40%的播放量。
 total_play_count = sum(song_count_df.play_count)
+# 56693493/138680243 = 40.88%
 (float(play_count_df.head(n=100000).play_count.sum())/total_play_count)*100
+# 播放量前40w的用户的总播放量  占  总播放量(138680243次播放)的  79.9%  ==> 40%的用户占据了80%的播放量。
+# (float(play_count_df.head(n=400000).play_count.sum())/total_play_count)*100 = 79.90847982578167
 play_count_subset = play_count_df.head(n=100000)
 
 
 # In[17]:
 
-
+# 同样的，我们发现大约30,000首歌占据了总体80%的播放量。这个信息就很有价值：10%的歌曲占据了80%的播放量。
+# 那么，通过这样一些条件，我们就可以从原始的数据集中抽取出最具代表性的数据出来，从而使得需要处理的数据量在一个可控的范围内。
+# 108715816/138680243 = 0.7839
 (float(song_count_df.head(n=30000).play_count.sum())/total_play_count)*100
 
 
@@ -178,8 +195,9 @@ cur.fetchall()
 
 # In[49]:
 
-
+# track_metadata_df  100w行 14列
 track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
+# track_metadata_df_sub  30447行 14列
 track_metadata_df_sub = track_metadata_df[track_metadata_df.song_id.isin(song_subset)]
 track_metadata_df.head()
 
@@ -259,16 +277,16 @@ import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
  
-objects = (list(popular_songs_top_20['title']))
-y_pos = np.arange(len(objects))
-performance = list(popular_songs_top_20['listen_count'])
- 
-plt.bar(y_pos, performance, align='center', alpha=0.5)
-plt.xticks(y_pos, objects, rotation='vertical')
-plt.ylabel('Item count')
-plt.title('Most popular songs')
- 
-plt.show()
+# objects = (list(popular_songs_top_20['title']))
+# y_pos = np.arange(len(objects))
+# performance = list(popular_songs_top_20['listen_count'])
+#
+# plt.bar(y_pos, performance, align='center', alpha=0.5)
+# plt.xticks(y_pos, objects, rotation='vertical')
+# plt.ylabel('Item count')
+# plt.title('Most popular songs')
+#
+# plt.show()
 
 
 # ## Most popular releases
@@ -276,19 +294,19 @@ plt.show()
 # In[58]:
 
 
-popular_release = triplet_dataset_sub_song_merged[['release','listen_count']].groupby('release').sum().reset_index()
-popular_release_top_20 = popular_release.sort_values('listen_count', ascending=False).head(n=20)
-
-objects = (list(popular_release_top_20['release']))
-y_pos = np.arange(len(objects))
-performance = list(popular_release_top_20['listen_count'])
- 
-plt.bar(y_pos, performance, align='center', alpha=0.5)
-plt.xticks(y_pos, objects, rotation='vertical')
-plt.ylabel('Item count')
-plt.title('Most popular Release')
- 
-plt.show()
+# popular_release = triplet_dataset_sub_song_merged[['release','listen_count']].groupby('release').sum().reset_index()
+# popular_release_top_20 = popular_release.sort_values('listen_count', ascending=False).head(n=20)
+#
+# objects = (list(popular_release_top_20['release']))
+# y_pos = np.arange(len(objects))
+# performance = list(popular_release_top_20['listen_count'])
+#
+# plt.bar(y_pos, performance, align='center', alpha=0.5)
+# plt.xticks(y_pos, objects, rotation='vertical')
+# plt.ylabel('Item count')
+# plt.title('Most popular Release')
+#
+# plt.show()
 
 
 # ## Most popular artists
@@ -296,19 +314,19 @@ plt.show()
 # In[62]:
 
 
-popular_artist = triplet_dataset_sub_song_merged[['artist_name','listen_count']].groupby('artist_name').sum().reset_index()
-popular_artist_top_20 = popular_artist.sort_values('listen_count', ascending=False).head(n=20)
-
-objects = (list(popular_artist_top_20['artist_name']))
-y_pos = np.arange(len(objects))
-performance = list(popular_artist_top_20['listen_count'])
- 
-plt.bar(y_pos, performance, align='center', alpha=0.5)
-plt.xticks(y_pos, objects, rotation='vertical')
-plt.ylabel('Item count')
-plt.title('Most popular Artists')
- 
-plt.show()
+# popular_artist = triplet_dataset_sub_song_merged[['artist_name','listen_count']].groupby('artist_name').sum().reset_index()
+# popular_artist_top_20 = popular_artist.sort_values('listen_count', ascending=False).head(n=20)
+#
+# objects = (list(popular_artist_top_20['artist_name']))
+# y_pos = np.arange(len(objects))
+# performance = list(popular_artist_top_20['listen_count'])
+#
+# plt.bar(y_pos, performance, align='center', alpha=0.5)
+# plt.xticks(y_pos, objects, rotation='vertical')
+# plt.ylabel('Item count')
+# plt.title('Most popular Artists')
+#
+# plt.show()
 
 
 # ## Song count distribution
@@ -316,21 +334,21 @@ plt.show()
 # In[64]:
 
 
-user_song_count_distribution = triplet_dataset_sub_song_merged[['user','title']].groupby('user').count().reset_index().sort_values(
-by='title',ascending = False)
-user_song_count_distribution.title.describe()
+# user_song_count_distribution = triplet_dataset_sub_song_merged[['user','title']].groupby('user').count().reset_index().sort_values(
+# by='title',ascending = False)
+# user_song_count_distribution.title.describe()
 
 
 # In[71]:
 
 
-x = user_song_count_distribution.title
-n, bins, patches = plt.hist(x, 50, facecolor='green', alpha=0.75)
-plt.xlabel('Play Counts')
-plt.ylabel('Num of Users')
-plt.title(r'$\mathrm{Histogram\ of\ User\ Play\ Count\ Distribution}\ $')
-plt.grid(True)
-plt.show()
+# x = user_song_count_distribution.title
+# n, bins, patches = plt.hist(x, 50, facecolor='green', alpha=0.75)
+# plt.xlabel('Play Counts')
+# plt.ylabel('Num of Users')
+# plt.title(r'$\mathrm{Histogram\ of\ User\ Play\ Count\ Distribution}\ $')
+# plt.grid(True)
+# plt.show()
 
 
 # # Recommendation Engines
@@ -359,7 +377,8 @@ train_data.head()
 
 # In[11]:
 
-
+# 基于热度的推荐引擎（排行榜推荐）
+# 这种推荐引擎是最容易开发的。它的逻辑非常朴素：如果一样东西被很多人喜欢，那么推荐给更多的人一般来说也不会太坏。
 def create_popularity_recommendation(train_data, user_id, item_id):
     #Get a count of user_ids for each unique song as recommendation score  获取每个独特歌曲的用户ID计数作为推荐分数
     train_data_grouped = train_data.groupby([item_id]).agg({user_id: 'count'}).reset_index()
@@ -392,8 +411,8 @@ recommendations
 
 # In[84]:
 
-
-song_count_subset = song_count_df.head(n=500)
+# 从所有歌曲中选取播放量前5000的歌曲
+song_count_subset = song_count_df.head(n=5000)
 user_subset = list(play_count_subset.user)
 song_subset = list(song_count_subset.song)
 triplet_dataset_sub_song_merged_sub = triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.song.isin(song_subset)]
@@ -409,8 +428,10 @@ triplet_dataset_sub_song_merged_sub.head()
 
 
 train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_sub, test_size = 0.30, random_state=0)
+#构造了很多变量和方法
 is_model = Recommenders.item_similarity_recommender_py()
 is_model.create(train_data, 'user', 'title')
+# 随机取一个用户
 user_id = list(train_data.user)[7]
 user_items = is_model.get_user_items(user_id)
 
@@ -426,7 +447,7 @@ is_model.recommend(user_id)
 
 # In[5]:
 
-
+# 先计算 歌曲被当前用户播放量 / 当前用户总播放量   作为用户对歌曲打分
 triplet_dataset_sub_song_merged_sum_df = triplet_dataset_sub_song_merged[['user','listen_count']].groupby('user').sum().reset_index()
 triplet_dataset_sub_song_merged_sum_df.rename(columns={'listen_count':'total_listen_count'},inplace=True)
 triplet_dataset_sub_song_merged = pd.merge(triplet_dataset_sub_song_merged,triplet_dataset_sub_song_merged_sum_df)
@@ -443,21 +464,21 @@ triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.user =='d6589314
 
 
 from scipy.sparse import coo_matrix
-
+# 构造稀疏矩阵，节省空间
 small_set = triplet_dataset_sub_song_merged
-user_codes = small_set.user.drop_duplicates().reset_index()
+user_codes = small_set.user.drop_duplicates().reset_index()  # 只保留得分和用户信息
 song_codes = small_set.song.drop_duplicates().reset_index()
 user_codes.rename(columns={'index':'user_index'}, inplace=True)
 song_codes.rename(columns={'index':'song_index'}, inplace=True)
-song_codes['so_index_value'] = list(song_codes.index)
+song_codes['so_index_value'] = list(song_codes.index)  # 按照整数编码索引index
 user_codes['us_index_value'] = list(user_codes.index)
 small_set = pd.merge(small_set,song_codes,how='left')
 small_set = pd.merge(small_set,user_codes,how='left')
 mat_candidate = small_set[['us_index_value','so_index_value','fractional_play_count']]
 data_array = mat_candidate.fractional_play_count.values
-row_array = mat_candidate.us_index_value.values
+row_array = mat_candidate.us_index_value.values  # 行和列索引值
 col_array = mat_candidate.so_index_value.values
-
+#   (997, 1417)	0.0006779661016949153   997行1417列的值是0.0006779661016949153
 data_sparse = coo_matrix((data_array, (row_array, col_array)),dtype=float)
 
 
@@ -486,13 +507,16 @@ from scipy.sparse import csc_matrix
 
 
 def compute_svd(urm, K):
-    U, s, Vt = svds(urm, K)
+    U, s, Vt = svds(urm, K)  # svd分解
+    print("U-shape",U.shape)
+    print("s-shape",s.shape)
+    print("V-shape",Vt.shape)
 
     dim = (len(s), len(s))
     S = np.zeros(dim, dtype=np.float32)
     for i in range(0, len(s)):
         S[i,i] = mt.sqrt(s[i])
-
+    # 转换成稀疏矩阵
     U = csc_matrix(U, dtype=np.float32)
     S = csc_matrix(S, dtype=np.float32)
     Vt = csc_matrix(Vt, dtype=np.float32)
@@ -505,7 +529,8 @@ def compute_estimated_matrix(urm, U, S, Vt, uTest, K, test):
     estimatedRatings = np.zeros(shape=(MAX_UID, MAX_PID), dtype=np.float16)
     recomendRatings = np.zeros(shape=(MAX_UID,max_recommendation ), dtype=np.float16)
     for userTest in uTest:
-        prod = U[userTest, :]*rightTerm
+        print("U[userTest,:]",U[userTest,:].shape)  # 获取当前测试的特征
+        prod = U[userTest, :]*rightTerm   # 当前用户对所有歌曲的特征结果
         estimatedRatings[userTest, :] = prod.todense()
         recomendRatings[userTest, :] = (-estimatedRatings[userTest, :]).argsort()[:max_recommendation]
     return recomendRatings
@@ -514,17 +539,17 @@ def compute_estimated_matrix(urm, U, S, Vt, uTest, K, test):
 # In[18]:
 
 
-K=50
-urm = data_sparse
-MAX_PID = urm.shape[1]
-MAX_UID = urm.shape[0]
+K=50  # 类似于中间特征值
+urm = data_sparse   # 矩阵
+MAX_PID = urm.shape[1]  # 用户个数
+MAX_UID = urm.shape[0]   # 歌曲个数
 
 U, S, Vt = compute_svd(urm, K)
 
 
 # In[19]:
 
-
+# 测试用户的索引值
 uTest = [4,5,6,7,8,873,23]
 
 uTest_recommended_items = compute_estimated_matrix(urm, U, S, Vt, uTest, K, True)

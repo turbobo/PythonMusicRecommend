@@ -5,7 +5,7 @@ Refer to Chapter 10: Section 'The Million Song Dataset Taste Profile' for more d
 
 train_triplets.txt 原数据集：包含用户-歌曲-播放次数  [user, song, play_count]
 数据来源：
-The Echo Nest Taste Profile Subset: Echo Nest提供了可以与MSD关联的user-song-play count数据集，包含100万user，4800万播放记录。
+The Echo Nest Taste Profile Subset: Echo Nest提供了可以与MSD关联的user-song-play count数据集，包含100万用户对38万首歌曲的4800万播放记录。
 Get the data from http://labrosa.ee.columbia.edu/millionsong/sites/default/files/challenge/train_triplets.txt.zip
 
 user_playcount_df.csv  每个用户播放歌曲的总次数  1019319  101w
@@ -18,9 +18,11 @@ track_metadata.db  音乐详细信息
 
 track_metadata_df_sub.csv  在triplet_dataset_sub_song中的歌曲信息子集
 
+搜索“改进”
 
+###参考博客
+https://blog.csdn.net/kepengs/article/details/87621178
 
-参考博客 https://blog.csdn.net/kepengs/article/details/87621178
 音乐推荐引擎
  
 
@@ -74,7 +76,6 @@ Out[3]:
 3	b80344d063b5ccb3212f76538f3d9e43d87dca9e	SOBFNSP12AF72A0E22	1
 4	b80344d063b5ccb3212f76538f3d9e43d87dca9e	SOBFOVM12A58A7D494	1
 对于这样规模大小的数据集，我们首先要做的是有多少用户(或者歌曲)是我们应该要考虑的。在原始数据集中，有大约100万的用户，但是这里面是不是所有用户我们都需要纳入考虑呢？比如说，如果20%的用户的歌曲播放了占了80%的总体播放量，那么其实我们只需要考虑这20%用户就差不多了。
-
 一般来说，我们统计一下播放量的累积求和就可以知道多少用户占了80%的总体播放量。不过鉴于数据量如此之大，pandas提供的累积求和功能会出问题。所以我们必须自己一行行地读取这个文件，一部分一部分地来完成这项工作：
 
 In [4]:
@@ -134,7 +135,6 @@ Out[6]:
 3	425463	SOFRQTD12A81C233C0
 4	389880	SOEGIYH12A6D4FC0E3
 有了这两份数据，我们首要的就是要找到前多少用户占了40%的总体播放量。这个"40%"是我们随机选的一个值，大家在实际的工作中可以自己选择这个数值，重点是控制数据集的大小。当然，如果有高效的Presto(支持HiveQL，但纯内存计算)集群的话，在整体数据集上统计这样的数据也会很快。
-
 就我们这个数据集，大约前100,000用户的播放量占据了总体的40%。
 
 In [7]:
@@ -479,8 +479,8 @@ Out[45]:
 泰坦尼克号	5	5	0	0
 乱世佳人	5	?	?	0
 罗马假日	?	4	0	?
-无间道	0	0	5	4
-指环王	0	0	5	?
+无间道	    0	0	5	4
+指环王	    0	0	5	?
 
 
 预测评分：
@@ -491,7 +491,9 @@ Out[45]:
 
 既然得到了这个式子，那么我们其实可以利用线性代数的知识来直接求解，而不去迭代的来求解  和 。当然了，考虑到矩阵分解的计算复杂度，我们在实际应用中其实更倾向于在理论课上讨论的迭代式的求解方式。
 
-这里我们作为扩展的内容，使用矩阵分解直接来试试。 对我们而言，我们目前所知道的矩阵分解其实只有在PCA降维的时候简单学习到的 SVD 分解。如果我们还记得使用 S 矩阵的前 K 个元素来挑选最重要的投影方向的话，我们其实也可以理解前 K 个元素对应的也是最重要的隐层特征。所以，我们可以借助 SVD 来构造这里的两个分解。那么基本的步骤是：
+这里我们作为扩展的内容，使用矩阵分解直接来试试。 对我们而言，我们目前所知道的矩阵分解其实只有在PCA降维的时候简单学习到的 SVD 分解。
+如果我们还记得使用 S 矩阵的前 K 个元素来挑选最重要的投影方向的话，我们其实也可以理解前 K 个元素对应的也是最重要的隐层特征。
+所以，我们可以借助 SVD 来构造这里的两个分解。那么基本的步骤是：
 
 将用户播放矩阵进行分解，得到矩阵
 选择  的前  个元素(对角线)
@@ -526,7 +528,7 @@ In [4]:
 from scipy.sparse import coo_matrix
 
 small_set = triplet_dataset_sub_song_merged
-user_codes = small_set.user.drop_duplicates().reset_index()
+user_codes = small_set.user.drop_duplicates().reset_index()  
 song_codes = small_set.song.drop_duplicates().reset_index()
 user_codes.rename(columns={'index':'user_index'}, inplace=True)
 song_codes.rename(columns={'index':'song_index'}, inplace=True)
