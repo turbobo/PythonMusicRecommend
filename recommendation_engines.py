@@ -27,16 +27,16 @@ data_home = './'
 # In[2]:
 
 # 这个数据大概包含了大约1019319用户对384547首歌的48373585条播放记录。
-triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt', 
-                              nrows=10000,sep='\t', header=None, 
-                              names=['user','song','play_count'])
+# triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt',
+#                               nrows=10000,sep='\t', header=None,
+#                               names=['user','song','play_count'])
 # triplet_dataset_all = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt')
 
 
 # In[3]:
 
 
-triplet_dataset.head(n=10)
+# triplet_dataset.head(n=10)
 
 
 # ## Get User and total play counts
@@ -126,7 +126,18 @@ total_play_count = sum(song_count_df.play_count)
 (float(play_count_df.head(n=100000).play_count.sum())/total_play_count)*100
 # 播放量前40w的用户的总播放量  占  总播放量(138680243次播放)的  79.9%  ==> 40%的用户占据了80%的播放量。
 # (float(play_count_df.head(n=400000).play_count.sum())/total_play_count)*100 = 79.90847982578167
-play_count_subset = play_count_df.head(n=100000)
+# play_count_subset = play_count_df.head(n=100000)
+# 前3w用户占19.19%
+# play_count_subset = play_count_df.head(n=30000)
+
+# 随机获取 30000用户
+# DataFrame.sample(n=None, frac=None, replace=False, weights=None, random_state=None, axis=None)[source]
+# n：要抽取的行数	 frac：抽取行的比例
+# replace：True:取行数据后，可以重复放回后再取，False:取行数据后不放回，下次取其它行数据
+# weights：字符索引或概率数组  axis=0:为行字符索引或概率数组  axis=1:为列字符索引或概率数组
+# random_state：random_state=None,取得数据不重复 random_state=1,可以取得重复数据
+# axis=0:抽取行 axis=1:抽取列
+play_count_subset = play_count_df.sample(n=8000, frac=None, replace=True, weights=None, random_state=1, axis=0)
 
 
 # In[17]:
@@ -140,7 +151,13 @@ play_count_subset = play_count_df.head(n=100000)
 # In[18]:
 
 # 歌曲播放量前3w的歌曲
-song_count_subset = song_count_df.head(n=30000)
+# song_count_subset = song_count_df.head(n=30000)
+# 前6000首歌占50.19%
+# song_count_subset = song_count_df.head(n=6000)
+
+# 随机获取 6000歌曲
+song_count_subset = song_count_df.sample(n=4000, frac=None, replace=True, weights=None, random_state=1, axis=0)
+
 
 
 # In[19]:
@@ -160,17 +177,36 @@ song_subset = list(song_count_subset.song)
 # # triplet_dataset_sub_song = triplet_dataset_sub[triplet_dataset_sub.song.isin(song_subset)]
 # # del(triplet_dataset_sub)
 
+# 测试数据已写入：前3w用户、6000歌曲子集
+triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt',sep='\t',
+                              header=None, names=['user','song','play_count'])
+triplet_dataset_sub = triplet_dataset[triplet_dataset.user.isin(user_subset)]
+# 用完后释放内存
+# del(triplet_dataset)
+
+# 只获取上面用户播放过的歌曲
+# triplet_dataset_sub_song = triplet_dataset_sub[triplet_dataset_sub.song.isin(song_subset)]
+
+# 直接获取元数据集中 存在于song_subset的歌曲
+triplet_dataset_sub_song = triplet_dataset[triplet_dataset.song.isin(song_subset)]
+del(triplet_dataset)
+del(triplet_dataset_sub)
+
 
 # In[ ]:
 
 
 # triplet_dataset_sub_song.to_csv(path_or_buf=data_home+'triplet_dataset_sub_song.csv', index=False)
+# 2409809
+triplet_dataset_sub_song.to_csv(path_or_buf=data_home+'triplet_dataset_sub_song_test.csv', index=False)
 
 
 # In[25]:
 
 # 已写入：直接从文件读出来
-triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='triplet_dataset_sub_song.csv')
+# triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='triplet_dataset_sub_song.csv')
+
+triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='triplet_dataset_sub_song_test.csv')
 triplet_dataset_sub_song.shape
 
 
@@ -211,7 +247,7 @@ track_metadata_df.head()
 # In[50]:
 
 # 已写入
-# track_metadata_df_sub.to_csv(path_or_buf=data_home+'track_metadata_df_sub.csv', index=False)
+track_metadata_df_sub.to_csv(path_or_buf=data_home+'track_metadata_df_sub_test.csv', index=False)
 
 
 # In[51]:
@@ -229,8 +265,9 @@ track_metadata_df_sub.shape
 # track_metadata_df_sub = pd.read_csv(filepath_or_buffer=data_home+'track_metadata_df_sub.csv')
 
 # jupyter代码
-triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer=data_home+'triplet_dataset_sub_song.csv',encoding = "ISO-8859-1")
-track_metadata_df_sub = pd.read_csv(filepath_or_buffer=data_home+'track_metadata_df_sub.csv',encoding = "ISO-8859-1")
+# triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer=data_home+'triplet_dataset_sub_song.csv',encoding = "ISO-8859-1")
+triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer=data_home+'triplet_dataset_sub_song_test.csv',encoding = "ISO-8859-1")
+track_metadata_df_sub = pd.read_csv(filepath_or_buffer=data_home+'track_metadata_df_sub_test.csv',encoding = "ISO-8859-1")
 
 
 # ## Clean up datasets
@@ -271,8 +308,8 @@ triplet_dataset_sub_song_merged.head(n=10)
 # In[185]:
 
 
-popular_songs = triplet_dataset_sub_song_merged[['title','listen_count']].groupby('title').sum().reset_index()
-popular_songs_top_20 = popular_songs.sort_values('listen_count', ascending=False).head(n=20)
+# popular_songs = triplet_dataset_sub_song_merged[['title','listen_count']].groupby('title').sum().reset_index()
+# popular_songs_top_20 = popular_songs.sort_values('listen_count', ascending=False).head(n=20)
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
@@ -381,7 +418,7 @@ train_data.head()
 
 # In[11]:
 
-# 基于热度的推荐引擎（排行榜推荐）
+# 1、基于热度的推荐引擎（排行榜推荐）
 # 这种推荐引擎是最容易开发的。它的逻辑非常朴素：如果一样东西被很多人喜欢，那么推荐给更多的人一般来说也不会太坏。
 def create_popularity_recommendation(train_data, user_id, item_id):
     #Get a count of user_ids for each unique song as recommendation score  获取每个独特歌曲的用户ID计数作为推荐分数
@@ -401,16 +438,16 @@ def create_popularity_recommendation(train_data, user_id, item_id):
 
 # In[82]:
 
-
-recommendations = create_popularity_recommendation(triplet_dataset_sub_song_merged,'user','title')
+# 关闭
+# recommendations = create_popularity_recommendation(triplet_dataset_sub_song_merged,'user','title')
 
 
 # In[83]:
 
+# 关闭
+# recommendations
 
-recommendations
-
-
+# 2、基于内容相似的推荐
 # ## Item similarity  based recommendations
 
 # In[84]:
@@ -419,44 +456,46 @@ recommendations
 song_count_subset = song_count_df.head(n=5000)
 user_subset = list(play_count_subset.user)
 song_subset = list(song_count_subset.song)
-triplet_dataset_sub_song_merged_sub = triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.song.isin(song_subset)]
+# 关闭
+# triplet_dataset_sub_song_merged_sub = triplet_dataset_sub_song_merged[triplet_dataset_sub_song_merged.song.isin(song_subset)]
 
 
 # In[36]:
 
-
-triplet_dataset_sub_song_merged_sub.head()
+# 关闭
+# triplet_dataset_sub_song_merged_sub.head()
 
 
 # In[85]:
 
-
-train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_sub, test_size = 0.30, random_state=0)
-#构造了很多变量和方法
-is_model = Recommenders.item_similarity_recommender_py()
-is_model.create(train_data, 'user', 'title')
-# 随机取一个用户
-user_id = list(train_data.user)[7]
-user_items = is_model.get_user_items(user_id)
+# 关闭
+# train_data, test_data = train_test_split(triplet_dataset_sub_song_merged_sub, test_size = 0.30, random_state=0)
+# #构造了很多变量和方法
+# is_model = Recommenders.item_similarity_recommender_py()
+# is_model.create(train_data, 'user', 'title')
+# # 随机取一个用户
+# user_id = list(train_data.user)[7]
+# user_items = is_model.get_user_items(user_id)
 
 
 # In[35]:
 
-
+# 关闭
 #Recommend songs for the user using personalized model
-is_model.recommend(user_id)
+# is_model.recommend(user_id)
 
 
 # ## Matrix factorization  based recommendations
 
 # In[5]:
-
+# 3、基于矩阵分解的推荐引擎
 # 先计算 歌曲被当前用户播放量 / 当前用户总播放量   作为用户对歌曲打分
 triplet_dataset_sub_song_merged_sum_df = triplet_dataset_sub_song_merged[['user','listen_count']].groupby('user').sum().reset_index()
 triplet_dataset_sub_song_merged_sum_df.rename(columns={'listen_count':'total_listen_count'},inplace=True)
 triplet_dataset_sub_song_merged = pd.merge(triplet_dataset_sub_song_merged,triplet_dataset_sub_song_merged_sum_df)
 triplet_dataset_sub_song_merged['fractional_play_count'] = triplet_dataset_sub_song_merged['listen_count']/triplet_dataset_sub_song_merged['total_listen_count']
-
+#
+triplet_dataset_sub_song_merged.to_csv(path_or_buf=data_home+'triplet_dataset_sub_song_merged_test.csv', index=False)
 
 # In[6]:
 
