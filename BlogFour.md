@@ -94,9 +94,22 @@ Step 2.2. 基于协同过滤的推荐
 
 
 得到用户-物品评分矩阵之后，我们用surprise库中的knnbasic函数进行协同过滤。
+#把x轴的刻度间隔设置为1，并存在变量里
+x_major_locator=MultipleLocator(1)
+#把y轴的刻度间隔设置为10，并存在变量里
+#y_major_locator=MultipleLocator(10)
+#ax为两条坐标轴的实例
+ax=plt.gca()
+#把x轴的主刻度设置为1的倍数
+ax.xaxis.set_major_locator(x_major_locator)
+#把y轴的主刻度设置为10的倍数
+#ax.yaxis.set_major_locator(y_major_locator)
+#把x轴的刻度范围设置为-0.5到11，因为0.5不满一个刻度间隔，所以数字不会显示出来，但是能看到一点空白
+#plt.xlim(-0.5,11)
+#plt.ylim(-5,110)
 
 协同过滤主要有itemCF和userCF，想法类似，都是先计算相似度矩阵，根据相似度来推荐物品。我的博客里面有介绍，就不赘叙了。
-
+[0.3522841911710546, 0.28709003703970487, 0.2794034690453446, 0.27656526733376197, 0.2762696817648763, 0.2763348196304486, 0.27621343112431757, 0.27618258150707126]
 Step 2.3. 基于矩阵分解的推荐
 矩阵分解同样采用上面的评分矩阵。
 
@@ -123,3 +136,45 @@ Part 4. 结语
 限于机器性能和时间所限，不能训练更多的数据，显然是未来可以提高的部分。在排序阶段，我们还可以用深度学习的相关算法，效果可能也不错。如果有更多的数据，比如像大众点评的结果查询结果，我们或许还可以做重排序。
 
 附：github代码 https://github.com/wangxinRS/Recommendation-System-for-Songs
+
+
+基于item、user、svd的knn方法( KFold(n_splits=5), KNNBasic(k=40) )：
+
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2760
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2756
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2762
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2770
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2758
+k=40 itemCF的平均准确率rmse：0.27610
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2723
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2736
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2710
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2724
+Computing the msd similarity matrix...
+Done computing similarity matrix.
+RMSE: 0.2745
+k=40 userCF的平均准确率rmse：0.27276
+RMSE: 0.2767
+RMSE: 0.2747
+RMSE: 0.2733
+RMSE: 0.2747
+RMSE: 0.2743
+k=40 SVD的平均准确率rmse：0.27473
