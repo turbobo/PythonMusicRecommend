@@ -51,15 +51,22 @@ from surprise.model_selection import KFold
 
 # In[2]:
 
-# 读取数据
-conn = sqlite3.connect('./lastfm_tags.db')
-cur = conn.cursor()
-cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
-cur.fetchall()
+# # 读取标签数据
+# conn = sqlite3.connect('db/lastfm_tags.db')
+# cur = conn.cursor()
+# cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+# cur.fetchall()
+# # # 获得数据的dataframe
+# print('We get all tags (with value) for track: %s')
+# sql = "SELECT tids.tid, tags.tag, tid_tag.val FROM tid_tag, tids, tags WHERE tags.ROWID=tid_tag.tag AND tid_tag.tid=tids.ROWID"
+# res = conn.execute(sql)
+# track_tag_val = res.fetchall()
+# # track_tag_val.to_csv(path_or_buf='track_tag_val.csv', index = False)
+# # print(data)
 
-
+'''
 # 读取数据
-data = pd.read_csv('./train_triplets.txt',
+data = pd.read_csv('data/metadata/train_triplets.txt',
                    sep='\t', header=None, names=['user', 'song', 'play_count'], nrows=2000000)
 data.head()
 
@@ -98,9 +105,49 @@ data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32'})
 # 当前内存结果
 data.info()
 
-
 # 这里，我们看到，内存从450M降低到300M，这样处理是有效的。
+data_copy = data.copy(deep=True)
+
+# 读取标签信息
+# data_tags = pd.read_csv('data/metadata/lastfm_unique_tags.txt',
+#                         sep='\t', header=None, names=['tag', 'track_count'])
+# print("data_tags内存：")
+# data_tags.info()
+# # label编码   播放量、次数,本来就是int64,不用编码
+# tag_encoder = LabelEncoder()
+# data_tags['tag'] = tag_encoder.fit_transform(data_tags['tag'].values)
 #
+# # 数据类型转换
+# data_tags.astype({'tag': 'int32', 'track_count': 'int32'})
+#
+# print("data_tags label编码后内存：")
+# data_tags.info()
+#
+# # 记录每个tag的track曲目数
+# tag_trackcounts = {}
+# for tag, group in data_tags.groupby('tag'):
+#     tag_trackcounts[tag] = group['track_count'].sum()
+# # 作图  统计tag的曲目数的分布情况
+# sns.displot(list(tag_trackcounts.values()), bins=5000, kde=False)
+# #把x轴的刻度间隔设置为1，并存在变量里
+# x_major_locator=MultipleLocator(10000)
+# #ax为两条坐标轴的实例
+# ax=plt.gca()
+# #把x轴的主刻度设置为1的倍数
+# ax.xaxis.set_major_locator(x_major_locator)
+# plt.xlim(10000, 110000)
+# plt.xlabel('track_count')
+# plt.ylabel('nums of tag')
+# plt.show()
+#
+# temp_tag = [tag for tag in tag_trackcounts.keys() if tag_trackcounts[tag] > 10000]
+# temp_trackcounts = [trackcounts for tag, trackcounts in tag_trackcounts.items() if trackcounts > 10000]
+#
+# print('tag曲目数大于10000的用户数量占总体用户数量的比例为', str(round(len(temp_tag)/len(tag_trackcounts), 4)*100)+'%')
+# print('tag曲目数大于10000的用户产生的播放总量占总体播放总量的比例为', str(round(sum(temp_trackcounts) / sum(tag_trackcounts.values())*100, 4))+'%')
+# print('tag曲目数大于10000的用户产生的数据占总体数据的比例为', str(round(len(data[data.user.isin(temp_tag)])/len(data)*100, 4))+"%")
+
+
 # 接着，我们需要进行一些基本的数据过滤。我们先来看一下用户的歌曲播放总量的分布情况。
 
 # In[6]:
@@ -204,13 +251,27 @@ data = data[data.song.isin(temp_song)]
 
 
 # 读取数据
-conn = sqlite3.connect('./track_metadata.db')
+conn = sqlite3.connect('db/track_metadata.db')
 cur = conn.cursor()
 cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
 cur.fetchall()
 
 # 获得数据的dataframe
 track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
+
+# # 读取标签数据
+# conn = sqlite3.connect('db/lastfm_tags.db')
+# cur = conn.cursor()
+# cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+# cur.fetchall()
+# # # 获得数据的dataframe
+# # track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
+# tid = 'TRCCOFQ128F4285A9E'
+# print('We get all tags (with value) for track: %s' % tid)
+# sql = "SELECT tags.tag, tid_tag.val FROM tid_tag, tids, tags WHERE tags.ROWID=tid_tag.tag AND tid_tag.tid=tids.ROWID and tids.tid='%s'" % tid
+# res = conn.execute(sql)
+# data = res.fetchall()
+# print(data)
 
 
 # In[15]:
@@ -235,9 +296,12 @@ track_metadata_df = track_metadata_df.rename(columns={'song_id': 'song'})
 
 # In[17]:
 
+# # track_metadata_df先跟track_tag_merge.csv拼接歌曲标签
+# pd.merge(data, track_metadata_df, on='song')
 
 # 根据特征song进行拼接，将拼接后的数据重新命名为data
 data = pd.merge(data, track_metadata_df, on='song')
+
 
 
 # In[18]:
@@ -261,8 +325,23 @@ data.columns
 
 data = data.astype({'play_count': 'int32', 'duration': 'float32', 'artist_familiarity': 'float32',
                     'artist_hotttnesss': 'float32', 'year': 'int32', 'track_7digitalid': 'int32'})
-print(' ')
+data.info()
 
+
+# data_copy是200w的数据，用编码后的song先跟track_metadata_df连接,再用track_id跟track_merge连接
+# data_copy = pd.merge(data_copy, track_metadata_df, on='song')
+# # 读取曲目-标签
+# track_tag_merge_df =  pd.read_csv('data/metadata/track_tag_merge.txt', sep='\t')  # 强调以空格分割一行的数据为2列
+# data_copy = pd.merge(data_copy, track_tag_merge_df, on='track_id')
+# data_copy.info()
+#
+# data_copy = data_copy.astype({'play_count': 'int32', 'duration': 'float32', 'artist_familiarity': 'float32',
+#                               'artist_hotttnesss': 'float32', 'year': 'int32', 'track_7digitalid': 'int32'})
+# data_copy.info()
+#
+# data_copy.to_csv('data/metadata/track_200w.csv', index=False)
+
+# track_200w = pd.read_csv('data/metadata/track_200w.csv')
 
 # In[21]:
 
@@ -431,9 +510,122 @@ data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScor
 
 
 # 得到用户-音乐评分矩阵
-user_item_rating = data[['user', 'song', 'rating']]
-user_item_rating = user_item_rating.rename(columns={'song': 'item'})
+# user_item_rating = data[['user', 'song', 'rating']]
+# user_item_rating = user_item_rating.rename(columns={'song': 'item'})
+# user_item_rating.to_csv('./user_item_rating.csv', index=False)   # 写入文件
 
+
+# In[]:
+# 合并track和tag数据
+conn = sqlite3.connect('db/track_metadata.db')
+cur = conn.cursor()
+cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+cur.fetchall()
+# 获得数据的dataframe
+track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
+# 读取曲目-标签
+track_tag_merge_df =  pd.read_csv('data/metadata/track_tag_merge.txt', sep='\t')  # 强调以空格分割一行的数据为2列
+# # 对song_id重命名为song
+# track_metadata_df = track_metadata_df.rename(columns={'song_id': 'song'})
+# 拼接歌曲标签
+track_metadata_tag_merge = pd.merge(track_tag_merge_df, track_metadata_df, on='track_id')
+track_metadata_tag_merge.to_csv('data/metadata/track_metadata_tag_merge.csv', index=False)
+'''
+
+# In[]:
+# # item2vec训练
+
+# user_item_rating = pd.read_csv('data/metadata/user_item_rating.csv')
+# user_item_rating.info()
+
+# # 平均分
+# user_item_rating["rating"].mean()
+
+# 聚合得到user song列表
+# user_item_rating_group = user_item_rating.groupby(['user'])['item'].apply(lambda x: ' '.join([str(m) for m in x])).reset_index()
+# user_item_rating_group.to_csv('data/metadata/user_item_rating_group.csv', index=False)
+
+
+# In[]:
+import findspark
+findspark.init()
+
+from pyspark.sql import SparkSession
+spark = SparkSession \
+    .builder \
+    .appName("PySpark Item2vec") \
+    .getOrCreate()
+sc = spark.sparkContext
+
+# pySpark读取数据
+user_item_rating_group = spark.read.csv('data/metadata/user_item_rating_group.csv', header=True)
+track_metadata_tag_merge = pd.read_csv('data/metadata/track_metadata_tag_merge.csv')
+song_title_tags = track_metadata_tag_merge[['song_id', 'title', 'tags']]
+song_title_tags.info()
+
+
+from pyspark.sql import functions as F
+from pyspark.sql import types as T
+user_item_rating_group = user_item_rating_group.withColumn('songs', F.split(user_item_rating_group.item, ' '))
+
+# In[]:
+# 实现word2vec训练与转换
+from pyspark.ml.feature import Word2Vec
+word2vec = Word2Vec(
+    vectorSize=5,
+    minCount=0,
+    inputCol='songs',
+    outputCol='song_2vec')
+model = word2vec.fit(user_item_rating_group)
+
+# # 不计算user embedding,计算item embedding
+# model.getVectors().show(3, truncate=False)
+# model.getVectors().select('word', 'vector') \
+#     .toPandas() \
+#     .to_csv('data/metadata/item_embedding.csv', index=False)
+
+# 给定电影，算出最相似10个电影
+item_embedding = pd.read_csv('data/metadata/item_embedding.csv')
+print(item_embedding.head(5))
+# 获取歌曲的信息
+track_200w = pd.read_csv('data/metadata/track_200w.csv')
+print(track_200w.head(5))
+# 去掉user列，然后根据song去掉重复行
+track_200w.drop('user', axis=1, inplace=True)
+# 去除完全重复的行数据
+# track_200w.drop_duplicates(inplace=True)
+
+# 去除song列重复的行数据
+track_200w.drop_duplicates(subset=['song'],keep='first',inplace=True)
+print(track_200w.head(5))
+
+# song作为word进行训练
+item_embedding_merge = pd.merge(left=item_embedding,
+                                right=track_200w,
+                                left_on='word',
+                                right_on='song')
+item_embedding_merge = item_embedding_merge[['word', 'vector', 'song', 'title', 'tags']]
+# # 根据song去重
+# item_embedding_merge.drop_duplicates(inplace=True)  # 12098,5
+print(item_embedding_merge.head(5))
+
+# In[]:
+import json
+
+item_embedding_merge['vector'] = item_embedding_merge['vector'].map(lambda x : np.array(json.loads(x)))
+# 选中一首歌  song=3209
+song = 3209
+item_embedding_merge.loc[item_embedding_merge['song']==song]
+song_embedding = item_embedding_merge.loc[item_embedding_merge['song']==song, 'vector'].iloc[0]
+
+# In[]
+from scipy.spatial import distance
+# 余弦相似度
+item_embedding_merge['sim_value'] = item_embedding_merge['vector'].map(lambda x : 1 - distance.cosine(song_embedding, x))
+print( item_embedding_merge[['song', 'title', 'tags', 'sim_value']].head(3) )
+
+# 按照相似度降序排列，查询前10条
+print( item_embedding_merge.sort_values(by='sim_value', ascending=False)[['song', 'title', 'tags', 'sim_value']].head(10) )
 
 # 首先，我们做itemCF的推荐。
 
