@@ -101,14 +101,14 @@ data_home = './'
 # In[14]:
 
 
-play_count_df = pd.read_csv(filepath_or_buffer='user_playcount_df.csv')
+play_count_df = pd.read_csv(filepath_or_buffer='data/metadata/user_playcount_df.csv')
 play_count_df.head(n =10)
 
 
 # In[15]:
 
 
-song_count_df = pd.read_csv(filepath_or_buffer='song_playcount_df.csv')
+song_count_df = pd.read_csv(filepath_or_buffer='data/metadata/song_playcount_df.csv')
 song_count_df.head(10)
 
 
@@ -206,7 +206,7 @@ triplet_dataset_sub_song.to_csv(path_or_buf=data_home+'triplet_dataset_sub_song_
 # 已写入：直接从文件读出来
 # triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='triplet_dataset_sub_song.csv')
 
-triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='triplet_dataset_sub_song_test.csv')
+triplet_dataset_sub_song = pd.read_csv(filepath_or_buffer='data/metadata/triplet_dataset_sub_song_test.csv')
 triplet_dataset_sub_song.shape
 
 

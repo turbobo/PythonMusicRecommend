@@ -18,6 +18,11 @@ track_metadata.db  音乐详细信息
 
 track_metadata_df_sub.csv  在triplet_dataset_sub_song中的歌曲信息子集 --- 修改参数后需要重新计算
 
+lastfm_unique_tags.txt   每个tag的曲目数
+
+track_tag_merge.txt  505216个曲目有标签
+
+
 搜索“改进”
 
 ###参考博客

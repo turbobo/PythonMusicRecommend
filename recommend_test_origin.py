@@ -52,7 +52,7 @@ from sklearn.model_selection import train_test_split
 
 
 # 读取数据
-data = pd.read_csv('./train_triplets.txt',
+data = pd.read_csv('data/metadata/train_triplets.txt',
                    sep='\t', header=None, names=['user', 'song', 'play_count'], nrows=2000000)
 data.head()
 

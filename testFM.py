@@ -2,6 +2,8 @@ from pyfm import pylibfm
 from sklearn.feature_extraction import DictVectorizer
 import numpy as np
 
+
+# 因子分解机
 train = [
     {"user": "1", "item": "5", "age": 19},
     {"user": "2", "item": "43", "age": 33},
