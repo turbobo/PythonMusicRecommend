@@ -64,7 +64,6 @@ from surprise.model_selection import KFold
 # # track_tag_val.to_csv(path_or_buf='track_tag_val.csv', index = False)
 # # print(data)
 
-'''
 # 读取数据
 data = pd.read_csv('data/metadata/train_triplets.txt',
                    sep='\t', header=None, names=['user', 'song', 'play_count'], nrows=2000000)
@@ -491,12 +490,16 @@ user_averageScore = {}
 for user, group in data.groupby('user'):
     user_averageScore[user] = group['play_count'].mean()
 
+# user_song_playcounts = data[['user','song','play_count']]
+# user_song_playcounts = user_song_playcounts.rename(columns={'play_count': 'rating'})
+# user_song_playcounts.to_csv('data/process/user_song_playcounts.csv', index=False)
 
 # In[31]:
 
 
 data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScore[x.user]), axis=1)
-# data['rating'] = data.apply(lambda x: np.log(1 + x.play_count / user_averageScore[x.user]), axis=1)
+
+# data['rating'] = data.apply(lambda x: (x.play_count / user_averageScore[x.user]), axis=1)
 
 
 # In[32]:
@@ -512,7 +515,7 @@ data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScor
 # 得到用户-音乐评分矩阵
 # user_item_rating = data[['user', 'song', 'rating']]
 # user_item_rating = user_item_rating.rename(columns={'song': 'item'})
-# user_item_rating.to_csv('./user_item_rating.csv', index=False)   # 写入文件
+# user_item_rating.to_csv('./user_item_rating.csv2', index=False)   # 写入文件
 
 
 # In[]:
@@ -530,7 +533,7 @@ track_tag_merge_df =  pd.read_csv('data/metadata/track_tag_merge.txt', sep='\t')
 # 拼接歌曲标签
 track_metadata_tag_merge = pd.merge(track_tag_merge_df, track_metadata_df, on='track_id')
 track_metadata_tag_merge.to_csv('data/metadata/track_metadata_tag_merge.csv', index=False)
-'''
+
 
 # In[]:
 # # item2vec训练
@@ -577,7 +580,7 @@ word2vec = Word2Vec(
     inputCol='songs',
     outputCol='song_2vec')
 model = word2vec.fit(user_item_rating_group)
-
+# print(model.get_latest_training_loss())
 # # 不计算user embedding,计算item embedding
 # model.getVectors().show(3, truncate=False)
 # model.getVectors().select('word', 'vector') \
