@@ -156,7 +156,7 @@ play_count_subset = play_count_df.sample(n=8000, frac=None, replace=True, weight
 # song_count_subset = song_count_df.head(n=6000)
 
 # 随机获取 6000歌曲
-song_count_subset = song_count_df.sample(n=4000, frac=None, replace=True, weights=None, random_state=1, axis=0)
+song_count_subset = song_count_df.sample(n=6000, frac=None, replace=True, weights=None, random_state=1, axis=0)
 
 
 
@@ -170,12 +170,12 @@ song_subset = list(song_count_subset.song)
 # In[20]:
 
 # 已写入：前10w用户、3w歌曲子集
-# triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt',sep='\t',
-# #                               header=None, names=['user','song','play_count'])
-# # triplet_dataset_sub = triplet_dataset[triplet_dataset.user.isin(user_subset) ]
-# # del(triplet_dataset)
-# # triplet_dataset_sub_song = triplet_dataset_sub[triplet_dataset_sub.song.isin(song_subset)]
-# # del(triplet_dataset_sub)
+triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt',sep='\t',
+                              header=None, names=['user','song','play_count'])
+triplet_dataset_sub = triplet_dataset[triplet_dataset.user.isin(user_subset) ]
+del(triplet_dataset)
+triplet_dataset_sub_song = triplet_dataset_sub[triplet_dataset_sub.song.isin(song_subset)]
+del(triplet_dataset_sub)
 
 # 测试数据已写入：前3w用户、6000歌曲子集
 triplet_dataset = pd.read_csv(filepath_or_buffer=data_home+'train_triplets.txt',sep='\t',

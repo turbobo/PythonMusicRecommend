@@ -32,10 +32,11 @@ for tag, group in data.groupby('tag'):
 
 # 作图
 # sns.displot(list(tag_counts.values()), bins=5000, kde=False)
-# plt.xlim(0, 200)
-# plt.xlabel('count')
-# plt.ylabel('nums of tag')
-# plt.show()
+sns.displot(list(tag_counts.values()), kde=False)
+plt.xlim(25, 200)
+plt.xlabel('count')
+plt.ylabel('nums of tag')
+plt.show()
 
 
 temp_tag = [tag for tag in tag_counts.keys() if tag_counts[tag] > 200]

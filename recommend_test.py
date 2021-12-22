@@ -25,10 +25,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
-from surprise import KNNBasic
-from surprise import Reader, Dataset, accuracy
-from surprise import SVD
-from surprise.model_selection import KFold
+# from surprise import KNNBasic
+# from surprise import Reader, Dataset, accuracy
+# from surprise import SVD
+# from surprise.model_selection import KFold
+# from surprise.model_selection import cross_validate
 
 # #### Part 1. 数据集介绍
 # * 我们的数据集
@@ -51,6 +52,8 @@ from surprise.model_selection import KFold
 
 # In[2]:
 
+path = 'data/metadata/'
+
 # # 读取标签数据
 # conn = sqlite3.connect('db/lastfm_tags.db')
 # cur = conn.cursor()
@@ -65,11 +68,15 @@ from surprise.model_selection import KFold
 # # print(data)
 
 # 读取数据
-data = pd.read_csv('data/metadata/train_triplets.txt',
-                   sep='\t', header=None, names=['user', 'song', 'play_count'], nrows=2000000)
-data.head()
+# data = pd.read_csv('data/metadata/train_triplets.txt',
+#                    sep='\t', header=None, names=['user', 'song', 'play_count'], nrows=2000000)
+# data.head()
 
-
+track_200w = pd.read_csv(path+'track_200w.csv')
+track_200w_full = pd.read_csv(path+'track_200w_full.csv')
+# 2052374条记录
+user_item_rating_all_200w = pd.read_csv(path+'user_item_rating_all_200w.csv')
+user_item_rating_all_200w.info()
 # In[3]:
 
 
@@ -86,7 +93,7 @@ data.info()
 # In[4]:
 
 
-# label编码
+# 播放源数据label编码
 user_encoder = LabelEncoder()
 data['user'] = user_encoder.fit_transform(data['user'].values)
 
@@ -105,7 +112,7 @@ data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32'})
 data.info()
 
 # 这里，我们看到，内存从450M降低到300M，这样处理是有效的。
-data_copy = data.copy(deep=True)
+# data_copy = data.copy(deep=True)
 
 # 读取标签信息
 # data_tags = pd.read_csv('data/metadata/lastfm_unique_tags.txt',
@@ -177,8 +184,8 @@ for user, group in data.groupby('user'):
 # In[8]:
 
 
-temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
-temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
+# temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
+# temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
 
 # print('歌曲播放量大于100的用户数量占总体用户数量的比例为', str(round(len(temp_user)/len(user_playcounts), 4)*100)+'%')
 # print('歌曲播放量大于100的用户产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(user_playcounts.values())*100, 4))+'%')
@@ -192,7 +199,7 @@ temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if
 
 
 # 过滤掉歌曲播放量少于100的用户的数据
-data = data[data.user.isin(temp_user)]
+# data = data[data.user.isin(temp_user)]
 
 
 # 类似的，我们挑选出具有一定播放量的歌曲。因为播放量太低的歌曲不但会增加计算复杂度，还会降低协同过滤的准确度。
@@ -223,8 +230,8 @@ for song, group in data.groupby('song'):
 # In[12]:
 
 
-temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
-temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
+# temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
+# temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
 
 # print('播放量大于50的歌曲数量占总体歌曲数量的比例为', str(round(len(temp_song)/len(song_playcounts), 4)*100)+'%')
 # print('播放量大于50的歌曲产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(song_playcounts.values())*100, 4))+'%')
@@ -238,7 +245,7 @@ temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if
 
 
 # 过滤掉播放量小于50的歌曲
-data = data[data.song.isin(temp_song)]
+# data = data[data.song.isin(temp_song)]
 
 
 # ##### Step 2. 对.db文件的处理
@@ -282,7 +289,7 @@ song_labels = dict(zip(song_encoder.classes_, range(len(song_encoder.classes_)))
 # 对于那些在之前没有出现过的歌曲，我们直接给一个最大的编码
 encoder = lambda x: song_labels[x] if x in song_labels.keys() else len(song_labels)
 
-# 对数据进行labelencoder
+# 对歌曲信息源数据进行labelencoder
 track_metadata_df['song_id'] = track_metadata_df['song_id'].apply(encoder)
 
 
@@ -369,7 +376,7 @@ data.info()
 # 去重
 data.drop_duplicates(inplace=True)
 # 丢掉无用信息
-data.drop(['track_id', 'artist_id', 'artist_mbid', 'duration', 'track_7digitalid', 'shs_perf', 'shs_work'], axis=1, inplace=True)
+data.drop(['artist_id', 'artist_mbid', 'duration', 'track_7digitalid', 'shs_perf', 'shs_work'], axis=1, inplace=True)
 
 
 # In[23]:
@@ -486,9 +493,9 @@ def recommendation_basedonPopularity(df, N=5):
 
 
 # 每个用户播放量的平均数
-user_averageScore = {}
-for user, group in data.groupby('user'):
-    user_averageScore[user] = group['play_count'].mean()
+# user_averageScore = {}
+# for user, group in data.groupby('user'):
+#     user_averageScore[user] = group['play_count'].mean()
 
 # user_song_playcounts = data[['user','song','play_count']]
 # user_song_playcounts = user_song_playcounts.rename(columns={'play_count': 'rating'})
@@ -497,9 +504,9 @@ for user, group in data.groupby('user'):
 # In[31]:
 
 
-data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScore[x.user]), axis=1)
-
-# data['rating'] = data.apply(lambda x: (x.play_count / user_averageScore[x.user]), axis=1)
+# data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScore[x.user]), axis=1)
+# 每首歌播放量占总播放量比例
+data['rating'] = data.apply(lambda x: (x.play_count / user_playcounts[x.user]), axis=1)
 
 
 # In[32]:
@@ -513,9 +520,9 @@ data['rating'] = data.apply(lambda x: np.log(2 + x.play_count / user_averageScor
 
 
 # 得到用户-音乐评分矩阵
-# user_item_rating = data[['user', 'song', 'rating']]
+user_item_rating = data[['user', 'song', 'rating']]
 # user_item_rating = user_item_rating.rename(columns={'song': 'item'})
-# user_item_rating.to_csv('./user_item_rating.csv2', index=False)   # 写入文件
+user_item_rating.to_csv('./data/metadata/user_item_rating_all_200w.csv', index=False)   # 写入文件
 
 
 # In[]:
@@ -792,7 +799,9 @@ def recommendation_basedonItemCF(userID, N=5):
 # 其次，我们做userCF的推荐。
 
 # In[38]:
-
+KNNdata = Dataset.load_builtin('ml-1m')
+algo = KNNBasic()
+cross_validate(algo, KNNdata, measures = ['MAE','RMSE'], cv = 3, verbose = True)
 
 # userCF
 
