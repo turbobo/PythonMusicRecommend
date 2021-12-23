@@ -73,10 +73,11 @@ path = 'data/metadata/'
 # data.head()
 
 track_200w = pd.read_csv(path+'track_200w.csv')
-track_200w_full = pd.read_csv(path+'track_200w_full.csv')
+track_200w_full = pd.read_csv(path+'track_all_200w.csv')
 # 2052374条记录
 user_item_rating_all_200w = pd.read_csv(path+'user_item_rating_all_200w.csv')
-user_item_rating_all_200w.info()
+user_item_rating_2 = pd.read_csv(path+'user_item_rating_2.csv')
+user_item_rating_all_200w.info(verbose=True, max_cols=True, memory_usage=True, show_counts=True)
 # In[3]:
 
 

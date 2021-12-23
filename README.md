@@ -23,6 +23,8 @@ lastfm_unique_tags.txt   每个tag的曲目数
 track_tag_merge.txt  505216个曲目有标签
 
 track_200w.csv   1382595条记录，train_triplets.txt中的两百万数据经过筛选后，将userID songID编码后和歌曲详细连接的表
+user_item_rating_2.csv  train_triplets.txt中的两百万数据经过筛选后，计算得出的评分数据
+
 track_200w_full.csv   2052374条记录,train_triplets.txt中的两百万数据直接将userID songID编码后和歌曲详细连接的表
 user_item_rating_all_200w.csv  train_triplets.txt中的两百万数据直接计算得出的评分数据
 
