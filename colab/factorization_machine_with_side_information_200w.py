@@ -27,11 +27,13 @@ path = '../data/metadata/'
 # ratings = pd.read_csv(path+'ratings.dat', sep='::', header=None, engine='python')
 # ratings.columns = ['userId','movieId','rating','timestamp']
 # ratings = ratings.drop('timestamp', axis=1)
-ratings = pd.read_csv(path+'user_item_rating_2.csv')   #, sep=',', header=None, engine='python')
+# ratings = pd.read_csv(path+'user_item_rating_2.csv')   #, sep=',', header=None, engine='python')
+ratings = pd.read_csv(path+'user_item_rating_all_200w.csv')   #, sep=',', header=None, engine='python')
 ratings.columns = ['user','song','rating']
 
 # data
-data = pd.read_csv(path+'track_200w.csv')
+# data = pd.read_csv(path+'track_200w.csv')
+data = pd.read_csv(path+'track_all_200w.csv')
 # data = data[['user','song','play_count','year','tags']]
 data.info()
 data.head()
@@ -127,8 +129,14 @@ ratings_ffm.info()
 # df_new = pd.concat([ratings_ffm, df_dummy], axis=1)
 
 # df_final = df_new.groupby(["userId", "movieId", "rating", "Gender", "Age", "Occupation"])[df_new.columns.values[7:]].sum().reset_index()
-df_final = ratings_ffm.groupby(["user", "song", "rating"])[ratings_ffm.columns.values[4:]].sum().reset_index()
+df_final = ratings_ffm.groupby(["user", "song", "rating","year"])[ratings_ffm.columns.values[5:]].sum().reset_index()
 print(df_final.shape)
+
+# 释放内存
+del(ratings_ffm)
+del(ratings)
+del(data)
+
 
 """### Functions used in training factorization machine"""
 
@@ -223,9 +231,6 @@ def create_plot(x1, x2, x3, y1, y2, y3, kind):
     plt.ylabel(kind, fontsize=14);
     plt.title(kind, loc='center', fontsize=16);
     plt.show()
-
-
-# 释放内存
 
 
 """### Factorization Machine"""
