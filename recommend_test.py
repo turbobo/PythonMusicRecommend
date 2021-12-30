@@ -23,13 +23,14 @@ from matplotlib.ticker import MultipleLocator
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split, StratifiedKFold, KFold
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 # from surprise import KNNBasic
 # from surprise import Reader, Dataset, accuracy
 # from surprise import SVD
 # from surprise.model_selection import KFold
 # from surprise.model_selection import cross_validate
+from sklearn.model_selection import cross_validate
 
 # #### Part 1. 数据集介绍
 # * 我们的数据集
@@ -794,7 +795,7 @@ def recommendation_basedonItemCF(userID, N=5):
     return song_topN
 
 # print("itemCF:",recommendation_basedonItemCF(29990))
-'''
+
 
 
 # 其次，我们做userCF的推荐。
@@ -803,7 +804,7 @@ def recommendation_basedonItemCF(userID, N=5):
 KNNdata = Dataset.load_builtin('ml-1m')
 algo = KNNBasic()
 cross_validate(algo, KNNdata, measures = ['MAE','RMSE'], cv = 3, verbose = True)
-
+'''
 # userCF
 
 # 阅读器
