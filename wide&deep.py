@@ -10,7 +10,7 @@ from os import path, listdir
 from sklearn.datasets import load_svmlight_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
-from tensorflow.contrib import layers
+# from tensorflow.contrib import layers
 
 from sklearn import metrics
 
@@ -27,7 +27,7 @@ import tensorflow as tf
 
 # 定义输入样本格式
 _CSV_COLUMNS = [
-    'rating', 'tag', 'artist_hotttnesss'
+    'rating', 'tags', 'artist_hotttnesss'
     # , 'education', 'education_num',
     # 'marital_status', 'occupation', 'relationship', 'race', 'gender',
     # 'capital_gain', 'capital_loss', 'hours_per_week', 'native_country',
@@ -83,8 +83,8 @@ def build_model_columns():
     # )
 
     # 有4480个标签，希望分成100个分类
-    tag = tf.feature_column.categorical_column_with_hash_bucket(
-        'tag', hash_bucket_size=1000
+    tags = tf.feature_column.categorical_column_with_hash_bucket(
+        'tags', hash_bucket_size=1000
     )
 
     # 特征Transformations
@@ -99,14 +99,14 @@ def build_model_columns():
     # 基本特征列
     base_columns = [
         # 全是离散特征
-        tag
+        tags
     ]
 
     # 交叉特征列
     crossed_columns = [
         # 评分和歌曲标签交叉
         tf.feature_column.crossed_column(
-            ['rating', 'tag'], hash_bucket_size=1000)
+            ['rating', 'tags'], hash_bucket_size=1000)
         # ,
         # tf.feature_column.crossed_column(
         #     [age_buckets, 'education', 'occupation'], hash_bucket_size=1000
@@ -137,7 +137,7 @@ def build_model_columns():
 
         # embedding特征
         # tf.feature_column.embedding_column(occupation, dimension=8)
-        tf.feature_column.embedding_column(tag, dimension=8)
+        tf.feature_column.embedding_column(tags, dimension=8)
     ]
     return wide_columns, deep_columns
 
@@ -222,7 +222,7 @@ def build_estimator(model_dir, model_type):
 
 # 模型路径
 model_type = 'widedeep'
-model_dir = 'data/metadata'
+model_dir = './data/metadata/'
 
 # Wide & Deep 联合模型
 model = build_estimator(model_dir, model_type)

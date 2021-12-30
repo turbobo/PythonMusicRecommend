@@ -1,3 +1,10 @@
+
+# -*- coding:utf-8 -*-
+
+# coding=utf-8
+
+# -*- coding=utf-8 -*-
+
 import findspark
 # findspark.init("D:\software\spark-2.4.4-bin-hadoop2.7")
 findspark.init()
@@ -24,7 +31,10 @@ from pyspark.sql import Row
 # ratings = spark.createDataFrame(ratingsRDD)
 # (training, test) = ratings.randomSplit([0.8, 0.2])
 
-rawUserData = sc.textFile('data/metadata/user_item_rating.csv')
+path = './data/metadata/'
+
+# rawUserData = sc.textFile('data/metadata/user_item_rating.csv')
+rawUserData = sc.textFile(path+'user_item_rating_all_200w.csv')
 rawUserData.count()
 rawUserData.first()
 rawRatings = rawUserData.map(lambda line:line.split(","))
@@ -42,7 +52,7 @@ ratings = spark.createDataFrame(rawRatings)
 als = ALS(maxIter=5,
           regParam=0.01,
           userCol="user",
-          itemCol="item",
+          itemCol="song",
           ratingCol="rating",
           coldStartStrategy="drop")
 model = als.fit(training)
