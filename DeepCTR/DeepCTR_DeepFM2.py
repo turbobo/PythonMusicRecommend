@@ -111,6 +111,7 @@ del(ratings)
 del(track_all_200w)
 del(track_metadata_df)
 
+# 2022-02-18   稀疏特征只有user、song
 sparse_features = ["song", "user",
                    "artist_hotttnesss", "year", 'duration']
 target = ['rating']
