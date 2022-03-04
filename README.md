@@ -33,12 +33,24 @@ user_item_rating_all_200w.csv  train_triplets.txt中的两百万数据直接计�
 ###参考博客
 https://blog.csdn.net/kepengs/article/details/87621178
 
-
 音乐推荐引擎
- 
+TRMMCBU128E0791823	Do You Know	SOSEDAW12A6701C8BB	Wake Up And Smell The Coffee	ARCBIPV1187B9AC2D1	c98d40fd-f6cf-4b26-883e-eaa515ee2851	The Cranberries	189.12608	0.830759465534	0.577364124179	2001	160212	-1	0
+TRCZHQJ128F42AE2BF	Shelter Me	SOKPRAY12A58A76F96	For Me_ It's You	ARICCZI1187B9AEBB3	bfd5aec5-62a2-4560-a316-7c46c17babda	Train	213.68118	0.838885951241	0.783677407954	2006	3471916	-1	0
+TRCIPHS128F9334536	Dangerous	SOULWEE12A6D4FA835	The Game & Posse	AR5UHAH1187B9A0B92	2e80ba15-ec0f-4bd4-b263-7e0671f38255	Ying Yang Twins ft. Wyclef Jean	259.65669	0.851064726891	0.538187420144	0	4092752	-1	0
+TRCANUN128F14555E1	Take Me Away	SOSEZXX12A6D4F6846	On Vol.1	ARX7D031187B99A418	bbd2242b-1e2c-49e6-9572-652fee7f8ed0	D:Ream	215.06567	0.609913163452	0.371125012273	1993	224475	-1	0
+数据集TRTKQHY128E0781C97	Everybody	SONZZWM12A6310D85D	Everybody.	ARH8YF41187B9A6D22	e1ae4ec2-84c3-4c59-83bf-b5dfdc1ad972	Worlds Apart	235.28444	0.516836911227	0.358367760851	0	7630	-1	0
+百万歌曲数据库TRUMTMH128F4263656	Time	SOWWTCK12A8C1394F0	Miracle	ARDBM921187FB50600	0e812ac1-63f2-4dd8-ad6d-f7e0c634fe12	Heidi Berry	228.46649	0.436354776545	0.263872907338	1996	2230873	-1	0
+TROPUMP128F92EC162	Love Story	SOTWSXL12A8C143349	Fearless	ARS54I31187FB46721	20244d07-534f-4eff-b4d4-930878889970	Taylor Swift	233.89995	0.889749219647	0.922412443366	2008	4309424	-1	0
+TRCLXTI128F932D0C9	One Time	SODOWUC12AC9097E76	One Time	ARFCWSZ123526A0AFD	e0140a67-e4d1-4f13-8a01-364355bee46e	Justin Bieber	214.67383	0.839405769673	0.691248747866	2009	5589915	-1	0
 
-数据集
-百万歌曲数据库
+33965	3209	32	TRIQAUQ128F42435AD	The Cove	Thicker Than Water	ARC8CQZ1187B98DECA	ff6e677f-91dd-4986-a174-8db0474b1799	Jack Johnson	112.63955	0.83201176	0.6774825	0	2093263	-1	0	instrumental,acoustic,guitar,Mellow,chill,Surf,Gitarrenunterricht,cac-guitar,Jack Johnson - The Cove,-2,ms3,beachin,Acoustic Jams,good guitar,eddie,jack johnson,Masterpiece,test,slow,folk,easy listening,Lieblingssongs,chill-out
+5860	3209	1	TRIQAUQ128F42435AD	The Cove	Thicker Than Water	ARC8CQZ1187B98DECA	ff6e677f-91dd-4986-a174-8db0474b1799	Jack Johnson	112.63955	0.83201176	0.6774825	0	2093263	-1	0	instrumental,acoustic,guitar,Mellow,chill,Surf,Gitarrenunterricht,cac-guitar,Jack Johnson - The Cove,-2,ms3,beachin,Acoustic Jams,good guitar,eddie,jack johnson,Masterpiece,test,slow,folk,easy listening,Lieblingssongs,chill-out
+19812	3209	6	TRIQAUQ128F42435AD	The Cove	Thicker Than Water	ARC8CQZ1187B98DECA	ff6e677f-91dd-4986-a174-8db0474b1799	Jack Johnson	112.63955	0.83201176	0.6774825	0	2093263	-1	0	instrumental,acoustic,guitar,Mellow,chill,Surf,Gitarrenunterricht,cac-guitar,Jack Johnson - The Cove,-2,ms3,beachin,Acoustic Jams,good guitar,eddie,jack johnson,Masterpiece,test,slow,folk,easy listening,Lieblingssongs,chill-out
+37162	3209	14	TRIQAUQ128F42435AD	The Cove	Thicker Than Water	ARC8CQZ1187B98DECA	ff6e677f-91dd-4986-a174-8db0474b1799	Jack Johnson	112.63955	0.83201176	0.6774825	0	2093263	-1	0	instrumental,acoustic,guitar,Mellow,chill,Surf,Gitarrenunterricht,cac-guitar,Jack Johnson - The Cove,-2,ms3,beachin,Acoustic Jams,good guitar,eddie,jack johnson,Masterpiece,test,slow,folk,easy listening,Lieblingssongs,chill-out
+12593	13918	9	TRPLAXZ128F4292406	12 segundos de oscuridad	10 + Downloaded	AR1BQ6Y1187B98D586	abb91078-f7db-41f2-8f07-7f37bb739143	Jorge Drexler	246.83057	0.64103705	0.41206926	2006	1788507	-1	0	cantautor,Jorge Drexler,y salio el sol,musica inspirada,costa a la vista,me perdi en el viaje,todo por delante,si perdiera la fe,turbante noche,solitario,temazooooo,acoustic,spanish pop,uruguayan,pop,singer-songwriter,chill,violin,World Music,chill music,12 segundos,oscuridad,Para Caminhar,latinos,canciones para galletas de animalitos,jorge drexler-12 segundos de oscuridad,Jorge Drexler - 12 Segundos de oscuridad,faro,clo-bubble,luz,drexler,in spanish,uruguayo,Cantautores,Mi Musica,newlist,jorge drexler 12 segundos
+7831	113050	201	TRUUHVD128F92E475C	Atiyosun	Yan Yana Fotograf Cektirelim	AR9927P1187FB3B406	244186bf-0cc8-40d9-a671-c39df90b9efd	Nazan Öncel	198.89587	0.4938706	0.38854757	0	4828083	-1	0	turkish,female vocalists,ethnic
+
+
 百万歌曲数据量可以在https://labrosa.ee.columbia.edu/millionsong/ 上下载。原始的数据包含了多年间上百万首歌曲的量化音频特征。它实际上是The Echonest和LABRosa的一个合作项目。
 这里我们不会使用整个数据集，而只会使用它们中的一部分。
 基于这个数据库，还衍生出了一些其他的数据集。其中一个就是The Echonest喜好画像子集。这个数据包含了匿名用户的歌曲播放次数的记录。这个数据集即使只是百万歌曲数据库的一个子集，但它的数据量也非常庞大，因为它包含了4800万行三元组信息：

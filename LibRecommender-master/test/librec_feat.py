@@ -1,12 +1,11 @@
-import time
-import pandas as pd
 import sqlite3
+import time
 
+import pandas as pd
+from libreco.algorithms import FM, WideDeep, DeepFM
 from libreco.data import DatasetFeat
-from libreco.algorithms import FM, WideDeep, DeepFM, AutoInt, DIN
-from keras import initializers
 
- # 加载数据
+# 加载数据
 path = '../../data/metadata/'
 ratings = pd.read_csv(path+'user_item_rating_all_200w.csv')   #, sep=',', header=None, engine='python')
 ratings.columns = ['user','song','rating']
@@ -398,34 +397,67 @@ train_data, data_info = DatasetFeat.build_trainset(
 eval_data = DatasetFeat.build_testset(eval_data)
 print(data_info)
 
+# 论文截图
+# sparse_col = ["song_year"]
+# dense_col = ["artist_hotttnesss", "duration"]
+# user_col = ["user"]
+# item_col = ["item", "artist_hotttnesss", "song_year", "duration"]
+#
+# train_data, data_info = DatasetFeat.build_trainset(
+#     train_data, user_col, item_col, sparse_col, dense_col
+# )
+# eval_data = DatasetFeat.build_testset(eval_data)
+# print(data_info)
+#
+# deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=10,
+#                 lr=0.001, lr_decay=False, reg=None, batch_size=256,
+#                 num_neg=1, use_bn=False, dropout_rate=None,
+#                 hidden_units="256,256,256", tf_sess_config=None)
+# deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
+#            metrics=["rmse", "mae", "r2"])
+# print("prediction: ", deepfm.predict(user=1, item=2333))
+# print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
+
 # hidden_dim隐藏维度基本上是每层中的节点数（例如在多层感知器中）
 # embed_size嵌入大小告诉您特征向量的大小（模型使用嵌入的词作为输入）
-reset_state("FM")
-fm = FM("rating", data_info, embed_size=16, n_epochs=10,
-        lr=0.001, lr_decay=False, reg=None, batch_size=256,
-        num_neg=1, use_bn=True, dropout_rate=None, tf_sess_config=None)
-fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
-        metrics=["rmse", "mae", "r2"])
-# print("prediction: ", fm.predict(user=1, item=2333))
-# print("recommendation: ", fm.recommend_user(user=1, n_rec=7))
-
+# reset_state("FM")
+# fm = FM("rating", data_info, embed_size=16, n_epochs=10,
+#         lr=0.001, lr_decay=False, reg=None, batch_size=256,
+#         num_neg=1, use_bn=True, dropout_rate=None, tf_sess_config=None)
+# fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
+#         metrics=["rmse", "mae", "r2"])
+# # print("prediction: ", fm.predict(user=1, item=2333))
+# # print("recommendation: ", fm.recommend_user(user=1, n_rec=7))
+#
 reset_state("Wide_Deep")
-wd = WideDeep("rating", data_info, embed_size=16, n_epochs=10,
+wd = WideDeep("rating", data_info, embed_size=16, n_epochs=50,
               lr={"wide": 0.01, "deep": 0.001}, lr_decay=False, reg=None,
               batch_size=256, num_neg=1, use_bn=False, dropout_rate=None,
-              hidden_units="256,128,64", tf_sess_config=None)
+              hidden_units="256,256,256", tf_sess_config=None)
 wd.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
         metrics=["rmse", "mae", "r2"])
-# print("prediction: ", wd.predict(user=1, item=2333))
-# print("recommendation: ", wd.recommend_user(user=1, n_rec=7))
+# # print("prediction: ", wd.predict(user=1, item=2333))
+# # print("recommendation: ", wd.recommend_user(user=1, n_rec=7))
 
-reset_state("DeepFM")
-deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=10,
-                lr=0.001, lr_decay=False, reg=None, batch_size=256,
-                num_neg=1, use_bn=False, dropout_rate=None,
-                hidden_units="256,128,64", tf_sess_config=None)
-deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
-            metrics=["rmse", "mae", "r2"])
+# https://blog.csdn.net/m0_37870649/article/details/83863194
+# 1）激活函数relu效果好于tanh，这与wide&deep的线上模型一致。
+# 2）每个隐层的unit在200到400之间效果最佳，相比wide&deep的unit数量要少一些。
+# 3）3层网络效果最佳，这与wide&deep的隐层数量相同。
+# 4）在总的神经单元数量固定的情况下，constant结构效果最佳，constant表示每个隐层的unit数量相同；
+# 而wide&deep采用的是塔式结构，越往上unit数量越少。
+# 5）文中没有说真实场景中embedding维度是多少，但是试验中的embedding维度设置为10，wide&deep中是32维，两个都不大。
+
+# reset_state("DeepFM")
+# deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=30,
+#                 lr=0.001, lr_decay=False, reg=None, batch_size=256,
+#                 num_neg=1, use_bn=False, dropout_rate=None,
+#                 hidden_units="256,256,256", tf_sess_config=None)
+# # 尝试
+# # hidden_units="256,256,256"   论文采用
+# # hidden_units="128,128,128"
+# # hidden_units="64,64,64"
+# deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
+#             metrics=["rmse", "mae", "r2"])
 # print("prediction: ", deepfm.predict(user=1, item=2333))
 # print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
 
