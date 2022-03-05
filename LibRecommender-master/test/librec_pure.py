@@ -25,7 +25,7 @@ import sqlite3
 """### 加载数据"""
 
 #Load data
-path = '/content/drive/MyDrive/data/metadata/'
+path = '../../data/metadata/'
 ratings = pd.read_csv(path+'user_item_rating_all_200w.csv')   #, sep=',', header=None, engine='python')
 ratings.columns = ['user','song','rating']
 ratings.info(verbose=True, max_cols=True, memory_usage=True, null_counts=True)
@@ -69,9 +69,8 @@ data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32', 'year': 'i
 print("data:****************************************")
 data.info(verbose=True, max_cols=True, memory_usage=True, null_counts=True)
 
-
 #songs
-conn = sqlite3.connect(path+'track_metadata.db')
+conn = sqlite3.connect('../../db/track_metadata.db')
 cur = conn.cursor()
 cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
 cur.fetchall()
@@ -387,17 +386,17 @@ final_df = final_df.rename(columns={'rating': 'label'})
 train_data, eval_data = split_by_ratio_chrono(final_df, test_size=0.2)
 train_data, data_info = DatasetPure.build_trainset(train_data)
 eval_data = DatasetPure.build_evalset(eval_data)
-eval_data
-print(data_info)
+# eval_data
+# print(data_info)
 
 reset_state("SVD")
-svd = SVD("rating", data_info, embed_size=16, n_epochs=3, lr=0.001,
+svd = SVD("rating", data_info, embed_size=16, n_epochs=20, lr=0.001,
           reg=None, batch_size=256, batch_sampling=False, num_neg=1)
 svd.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
         metrics=["rmse", "mae", "r2"])
 
-print(eval_data)
-eval_data
+# print(eval_data)
+# eval_data
 
 # print("prediction: ", svd.predict(user=1, item=2333))
 # print("recommendation: ", svd.recommend_user(user=1, n_rec=7))
@@ -437,18 +436,19 @@ eval_data
 # print("prediction: ", als.predict(user=1, item=2333))
 # print("recommendation: ", als.recommend_user(user=1, n_rec=7))
 
-reset_state("user_cf")
-user_cf = UserCF(task="rating", data_info=data_info, k=20, sim_type="cosine")
-user_cf.fit(train_data, verbose=2, mode="invert", num_threads=4, min_common=1,
-            eval_data=eval_data, metrics=["rmse", "mae", "r2"])
-# print("prediction: ", user_cf.predict(user=1, item=2333))
-# print("recommendation: ", user_cf.recommend_user(user=1, n_rec=7))
-
-reset_state("item_cf")
-item_cf = ItemCF(task="rating", data_info=data_info, k=20, sim_type="cosine")
-item_cf.fit(train_data, verbose=2, mode="invert", num_threads=1, min_common=1,
-            eval_data=eval_data, metrics=["rmse", "mae", "r2"])
+# reset_state("user_cf")
+# user_cf = UserCF(task="rating", data_info=data_info, k=20, sim_type="cosine")
+# user_cf.fit(train_data, verbose=2, mode="invert", num_threads=1, min_common=1,
+#             eval_data=eval_data, metrics=["rmse", "mae", "r2"])
+# # print("prediction: ", user_cf.predict(user=1, item=2333))
+# # print("recommendation: ", user_cf.recommend_user(user=1, n_rec=7))
+#
+# reset_state("item_cf")
+# item_cf = ItemCF(task="rating", data_info=data_info, k=20, sim_type="cosine")
+# item_cf.fit(train_data, verbose=2, mode="invert", num_threads=1, min_common=1,
+#             eval_data=eval_data, metrics=["rmse", "mae", "r2"])
 # print("prediction: ", item_cf.predict(user=1, item=2333))
 # print("recommendation: ", item_cf.recommend_user(user=1, n_rec=7))
 
 # print(f"total running time: {(time.perf_counter() - start_time):.2f}")
+print("*******************************************结束！*******************************************")
