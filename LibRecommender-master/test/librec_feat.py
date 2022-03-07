@@ -20,13 +20,13 @@ data.info(verbose=True, max_cols=True, memory_usage=True, null_counts=True)
 data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32', 'year': 'int32'})
 
 # # 字典user_playcounts记录每个用户的播放总量
-# user_playcounts = {}
-# for user, group in data.groupby('user'):
-#     user_playcounts[user] = group['play_count'].sum()
-# temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
-# temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
-# # data = data[data.user.isin(temp_user)]
-# ratings = ratings[ratings.user.isin(temp_user)]
+user_playcounts = {}
+for user, group in data.groupby('user'):
+    user_playcounts[user] = group['play_count'].sum()
+temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
+temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
+# data = data[data.user.isin(temp_user)]
+ratings = ratings[ratings.user.isin(temp_user)]
 # print('歌曲播放量大于100的用户数量占总体用户数量的比例为', str(round(len(temp_user)/len(user_playcounts), 4)*100)+'%')
 # print('歌曲播放量大于100的用户产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(user_playcounts.values())*100, 4))+'%')
 # print('歌曲播放量大于100的用户产生的数据占总体数据的比例为', str(round(len(data[data.user.isin(temp_user)])/len(data)*100, 4))+"%")
@@ -34,13 +34,13 @@ data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32', 'year': 'i
 
 
 # song_playcounts字典，记录每首歌的播放量
-# song_playcounts = {}
-# for song, group in data.groupby('song'):
-#     song_playcounts[song] = group['play_count'].sum()
-# temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
-# temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
-# # data = data[data.song.isin(temp_song)]
-# ratings = ratings[ratings.song.isin(temp_song)]
+song_playcounts = {}
+for song, group in data.groupby('song'):
+    song_playcounts[song] = group['play_count'].sum()
+temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
+temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
+# data = data[data.song.isin(temp_song)]
+ratings = ratings[ratings.song.isin(temp_song)]
 # print('播放量大于50的歌曲数量占总体歌曲数量的比例为', str(round(len(temp_song)/len(song_playcounts), 4)*100)+'%')
 # print('播放量大于50的歌曲产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(song_playcounts.values())*100, 4))+'%')
 # print('播放量大于50的歌曲产生的数据占总体数据的比例为', str(round(len(data[data.song.isin(temp_song)])/len(data)*100, 4))+"%")
@@ -397,7 +397,7 @@ train_data, data_info = DatasetFeat.build_trainset(
 eval_data = DatasetFeat.build_testset(eval_data)
 print(data_info)
 
-# 论文截图
+""" 论文截图
 # sparse_col = ["song_year"]
 # dense_col = ["artist_hotttnesss", "duration"]
 # user_col = ["user"]
@@ -417,15 +417,18 @@ print(data_info)
 #            metrics=["rmse", "mae", "r2"])
 # print("prediction: ", deepfm.predict(user=1, item=2333))
 # print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
+"""
+
+
 
 # hidden_dim隐藏维度基本上是每层中的节点数（例如在多层感知器中）
 # embed_size嵌入大小告诉您特征向量的大小（模型使用嵌入的词作为输入）
-reset_state("FM")
-fm = FM("rating", data_info, embed_size=16, n_epochs=25,
-        lr=0.001, lr_decay=False, reg=None, batch_size=256,
-        num_neg=1, use_bn=True, dropout_rate=None, tf_sess_config=None)
-fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
-        metrics=["rmse", "mae", "r2"])
+# reset_state("FM")
+# fm = FM("rating", data_info, embed_size=16, n_epochs=25,
+#         lr=0.001, lr_decay=False, reg=None, batch_size=256,
+#         num_neg=1, use_bn=True, dropout_rate=None, tf_sess_config=None)
+# fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
+#         metrics=["rmse", "mae", "r2"])
 # print("prediction: ", fm.predict(user=1, item=2333))
 # print("recommendation: ", fm.recommend_user(user=1, n_rec=7))
 
@@ -437,8 +440,8 @@ fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
 #               hidden_units="256,256,256", tf_sess_config=None)
 # wd.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
 #         metrics=["rmse", "mae", "r2"])
-# # print("prediction: ", wd.predict(user=1, item=2333))
-# # print("recommendation: ", wd.recommend_user(user=1, n_rec=7))
+# print("prediction: ", wd.predict(user=1, item=2333))
+# print("recommendation: ", wd.recommend_user(user=1, n_rec=7))
 
 # https://blog.csdn.net/m0_37870649/article/details/83863194
 # 1）激活函数relu效果好于tanh，这与wide&deep的线上模型一致。
@@ -449,17 +452,17 @@ fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
 # 5）文中没有说真实场景中embedding维度是多少，但是试验中的embedding维度设置为10，wide&deep中是32维，两个都不大。
 
 # 2022-03-04
-# reset_state("DeepFM")
-# deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=40,
-#                 lr=0.001, lr_decay=False, reg=None, batch_size=256,
-#                 num_neg=1, use_bn=False, dropout_rate=None,
-#                 hidden_units="256,256,256", tf_sess_config=None)
-# # 尝试
-# # hidden_units="256,256,256"   论文采用
-# # hidden_units="128,128,128"
-# # hidden_units="64,64,64"
-# deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
-#             metrics=["rmse", "mae", "r2"])
+reset_state("DeepFM")
+deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=60,
+                lr=0.001, lr_decay=False, reg=None, batch_size=256,
+                num_neg=1, use_bn=False, dropout_rate=0.5,
+                hidden_units="256,256,256", tf_sess_config=None)
+# 尝试
+# hidden_units="256,256,256"   论文采用
+# hidden_units="128,128,128"  dropout_rate
+# hidden_units="64,64,64"
+deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
+            metrics=["rmse", "mae", "r2"])
 # print("prediction: ", deepfm.predict(user=1, item=2333))
 # print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
 
@@ -485,3 +488,5 @@ fm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
 # print("recommendation: ", din.recommend_user(user=1, n_rec=7))
 
 # print(f"total running time: {(time.perf_counter() - start_time):.2f}")
+
+print("*******************************************结束！*******************************************")
