@@ -2,37 +2,31 @@
 
 ## Introduction
 
-This guide mainly describes how to use [`flask`](<https://flask.palletsprojects.com/en/1.1.x/>) to serve a trained model in LibRecommender. From serving's perspective, currently there are three kinds of models in LibRecommender: 
+本指南主要介绍如何flask在 LibRecommender 中使用为经过训练的模型提供服务。从服务的角度来看，目前 LibRecommender 中共有三种模型：
 
-+ KNN-based model
-+ vector-based model 
-+ tensorflow-based model. 
+基于 KNN 的模型
+基于向量的模型
+基于张量流的模型。
+以下是主要的服务工作流程：
 
-The following is the main serving workflow: 
+将训练好的模型序列化到磁盘。
+加载模型并保存到redis。
+运行flask服务器。
+向服务器发出 http 请求并获得推荐。
+在这里，我们选择不将训练好的模型直接保存到 redis，因为：
+1）即使您首先将模型保存到 redis，最终还是会保存到磁盘; 
+2）我们尽量保持以下要求主libreco模块尽可能少。
 
-1. Serialize trained model to disk.
-2. Load model and save to redis.
-3. Run flask server.
-4. Make http request to the server and get recommendation.
+所以在服务过程中，首先应该启动redis服务器：
 
-Here we choose NOT to save the trained model directly to redis, since:  1) Even you save the model to redis in the first place, you'll end up with saving to disk anyway :)  2) We try to keep the requirements of the main `libreco` module as minimal as possible.
-
-So during serving, one should start redis server first: 
-
-```bash
 $ redis-server
-```
 
+保存格式
+在 LibRecommender 中，主要的数据序列化格式是JSON而不是 pickle，因为 pickle 比较慢，并且在官方的pickle文档中声明：
 
+警告：该pickle模块对错误或恶意构建的数据不安全。永远不要取消从不受信任或未经身份验证的来源收到的数据。
 
-## Saving Format
-
-In LibRecommender, the primary data serialization format is [`JSON`](<https://www.json.org/json-en.html>) rather than pickle, because pickle is relatively slow and it is declared in the official [pickle](<https://docs.python.org/3.6/library/pickle.html>) documentation that:
-
-> Warning: The `pickle` module is not secure against erroneous or maliciously constructed data. Never unpickle data received from an untrusted or unauthenticated source.
-
-Aside from JSON, models built upon tensorflow are saved using its own [`tf.saved_model`](<https://tensorflow.google.cn/versions/r1.15/api_docs/python/tf/saved_model>) API, which will basically be transformed to `protocol buffer` format.
-
+除了 JSON，基于 tensorflow 构建的模型使用自己的tf.saved_modelAPI 保存，基本上会转换为protocol buffer格式。
 
 
 ## KNN-based model
