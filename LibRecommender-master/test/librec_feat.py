@@ -6,6 +6,9 @@ from libreco.algorithms import FM, WideDeep, DeepFM
 from libreco.data import DatasetFeat
 
 # 加载数据
+from libreco.utils import save_info, save_model_tf_serving
+from serving.flask import data_info2redis, user_consumed2redis, seq2redis
+
 path = '../../data/metadata/'
 ratings = pd.read_csv(path+'user_item_rating_all_200w.csv')   #, sep=',', header=None, engine='python')
 ratings.columns = ['user','song','rating']
@@ -20,27 +23,27 @@ data.info(verbose=True, max_cols=True, memory_usage=True, null_counts=True)
 data.astype({'user': 'int32', 'song': 'int32', 'play_count': 'int32', 'year': 'int32'})
 
 # # 字典user_playcounts记录每个用户的播放总量
-user_playcounts = {}
-for user, group in data.groupby('user'):
-    user_playcounts[user] = group['play_count'].sum()
-temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
-temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
-# data = data[data.user.isin(temp_user)]
-ratings = ratings[ratings.user.isin(temp_user)]
+# user_playcounts = {}
+# for user, group in data.groupby('user'):
+#     user_playcounts[user] = group['play_count'].sum()
+# temp_user = [user for user in user_playcounts.keys() if user_playcounts[user] > 100]
+# temp_playcounts = [playcounts for user, playcounts in user_playcounts.items() if playcounts > 100]
+# # data = data[data.user.isin(temp_user)]
+# ratings = ratings[ratings.user.isin(temp_user)]
 # print('歌曲播放量大于100的用户数量占总体用户数量的比例为', str(round(len(temp_user)/len(user_playcounts), 4)*100)+'%')
 # print('歌曲播放量大于100的用户产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(user_playcounts.values())*100, 4))+'%')
 # print('歌曲播放量大于100的用户产生的数据占总体数据的比例为', str(round(len(data[data.user.isin(temp_user)])/len(data)*100, 4))+"%")
 
 
 
-# song_playcounts字典，记录每首歌的播放量
-song_playcounts = {}
-for song, group in data.groupby('song'):
-    song_playcounts[song] = group['play_count'].sum()
-temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
-temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
-# data = data[data.song.isin(temp_song)]
-ratings = ratings[ratings.song.isin(temp_song)]
+# # song_playcounts字典，记录每首歌的播放量
+# song_playcounts = {}
+# for song, group in data.groupby('song'):
+#     song_playcounts[song] = group['play_count'].sum()
+# temp_song = [song for song in song_playcounts.keys() if song_playcounts[song] > 50]
+# temp_playcounts = [playcounts for song, playcounts in song_playcounts.items() if playcounts > 50]
+# # data = data[data.song.isin(temp_song)]
+# ratings = ratings[ratings.song.isin(temp_song)]
 # print('播放量大于50的歌曲数量占总体歌曲数量的比例为', str(round(len(temp_song)/len(song_playcounts), 4)*100)+'%')
 # print('播放量大于50的歌曲产生的播放总量占总体播放总量的比例为', str(round(sum(temp_playcounts) / sum(song_playcounts.values())*100, 4))+'%')
 # print('播放量大于50的歌曲产生的数据占总体数据的比例为', str(round(len(data[data.song.isin(temp_song)])/len(data)*100, 4))+"%")
@@ -369,6 +372,7 @@ print('Sparsity: {:4.3f}%'.format(float(final_df.shape[0]) / float(n_users*n_son
 
 final_df = final_df.rename(columns={'song': 'item'})
 final_df = final_df.rename(columns={'rating': 'label'})
+# 训练集占数据集0.2
 train_data, eval_data = split_by_ratio_chrono(final_df, test_size=0.2)
 
 # 指定完整的列信息
@@ -453,7 +457,7 @@ print(data_info)
 
 # 2022-03-04
 reset_state("DeepFM")
-deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=60,
+deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=1, #60
                 lr=0.001, lr_decay=False, reg=None, batch_size=256,
                 num_neg=1, use_bn=False, dropout_rate=0.5,
                 hidden_units="256,256,256", tf_sess_config=None)
@@ -464,7 +468,50 @@ deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=60,
 deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
             metrics=["rmse", "mae", "r2"])
 # print("prediction: ", deepfm.predict(user=1, item=2333))
-# print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
+print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
+print("recommendation: ", deepfm.recommend_user(user=8, n_rec=7))
+
+
+model_path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model3"
+# save data_info, specify model save folder
+data_info.save(path=model_path)
+# set manual=True will use numpy to save model
+# set manual=False will use tf.train.Saver to save model
+# set inference=True will only save the necessary variables for prediction and recommendation
+deepfm.save(path=model_path, model_name="deepfm_model", manual=True,
+            inference_only=True)
+
+
+
+
+
+# 保存模型1 ----  直接将推荐数据保存到redis，解析Json即可获得推荐数据
+path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model2"   # 指定模型保存目录
+save_info(path, deepfm, train_data, data_info)  # 保存 data_info
+save_model_tf_serving(path, deepfm, "deepfm")   # 保存 tf 模型
+# 默认host="localhost", port=6379, db=0,
+data_info2redis(path)	   # 保存特征信息到redis
+user_consumed2redis(path)   # 保存user_consumed到redis，防止推荐用户消费过的商品
+seq2redis(path)    # 保存商品序列到redis
+
+# 保存模型2
+# tf.saved_model.save(deepfm, "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model2")
+# print("模型保存结束***************")
+#
+
+# 保存模型3
+path3 = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model3"   # 指定模型保存目录
+module_no_signatures_path = os.path.join(path3, 'module_no_signatures')
+deepfm(tf.constant(0.))
+print('Saving model...')
+tf.saved_model.save(deepfm, module_no_signatures_path)
+
+
+
+# # 载入模型
+# mymodel = tf.saved_model.load("D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model")
+# print("模型保存结束***************")
+# print("recommendation: ", mymodel.recommend_user(user=1, n_rec=7))
 
 # reset_state("AutoInt")
 # autoint = AutoInt("rating", data_info, embed_size=16, n_epochs=2,
