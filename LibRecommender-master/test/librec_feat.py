@@ -65,6 +65,15 @@ track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
 track_metadata_df = track_metadata_df[['track_id','duration']]
 
 songs = pd.merge(data,track_metadata_df,how='inner',on="track_id")
+
+# 保存歌曲信息  --- 深复制，两份数据不影响  ---  保存为utf-8格式
+songsSave = songs.copy(deep=True)
+songsSave.drop('user', axis=1, inplace=True)   # axis=1删除列
+songsSave.drop_duplicates(subset=['song'],keep='first',inplace=True)
+songsSave.to_csv("D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model_20\songsSave.csv",
+                 encoding = 'utf_8_sig', index=False, sep=',')
+del(songsSave)
+
 songs = songs[['song','artist_hotttnesss','year','duration']]
 songs = songs.rename(columns={'year': 'song_year'})
 # 根据songID去重
@@ -119,6 +128,7 @@ print('Sparsity: {:4.3f}%'.format(float(ratings.shape[0]) / float(n_users*n_song
 # 评分和歌曲连接
 # final_df = ratings.merge(songs, left_on='song', right_on='song', how='inner')
 # final_df = pd.merge(ratings,songs,how='left',on="song")
+
 final_df = pd.merge(ratings,songs,how='inner',on="song")
 # user、song不按照播放量筛选：1648992条数据
 final_df.info(verbose=True, max_cols=True, memory_usage=True, null_counts=True)
@@ -133,7 +143,7 @@ print('Sparsity: {:4.3f}%'.format(float(final_df.shape[0]) / float(n_users*n_son
 final_df.head(10)
 
 # 释放内存
-del(songs)
+# del(songs)
 del(ratings)
 del(track_metadata_df)
 
@@ -457,7 +467,7 @@ print(data_info)
 
 # 2022-03-04
 reset_state("DeepFM")
-deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=1, #60
+deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=20, #60
                 lr=0.001, lr_decay=False, reg=None, batch_size=256,
                 num_neg=1, use_bn=False, dropout_rate=0.5,
                 hidden_units="256,256,256", tf_sess_config=None)
@@ -468,11 +478,11 @@ deepfm = DeepFM("rating", data_info, embed_size=16, n_epochs=1, #60
 deepfm.fit(train_data, verbose=2, shuffle=True, eval_data=eval_data,
             metrics=["rmse", "mae", "r2"])
 # print("prediction: ", deepfm.predict(user=1, item=2333))
-print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
-print("recommendation: ", deepfm.recommend_user(user=8, n_rec=7))
+# print("recommendation: ", deepfm.recommend_user(user=1, n_rec=7))
+# print("recommendation: ", deepfm.recommend_user(user=8, n_rec=7))
 
 
-model_path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model3"
+model_path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model_20"
 # save data_info, specify model save folder
 data_info.save(path=model_path)
 # set manual=True will use numpy to save model
@@ -486,7 +496,7 @@ deepfm.save(path=model_path, model_name="deepfm_model", manual=True,
 
 
 # 保存模型1 ----  直接将推荐数据保存到redis，解析Json即可获得推荐数据
-path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model2"   # 指定模型保存目录
+path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model_3"   # 指定模型保存目录
 save_info(path, deepfm, train_data, data_info)  # 保存 data_info
 save_model_tf_serving(path, deepfm, "deepfm")   # 保存 tf 模型
 # 默认host="localhost", port=6379, db=0,
