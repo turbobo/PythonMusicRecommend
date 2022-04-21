@@ -36,6 +36,7 @@ if __name__ == "__main__":
 
     # 获取user  转为int
     userId = int (sys.argv[1])
+    print("userId:",userId)
     # userId = 2211
 
     model_path = "D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model_20"
@@ -64,6 +65,7 @@ if __name__ == "__main__":
 
 
     print("recommendation:", model.recommend_user(user=userId, n_rec=30))
+    # print("recommendation:", model.recommend_user(user=1, n_rec=30))
 
     # recommend = model.recommend_user(user=userId, n_rec=30)
     # recommend_songId = []
@@ -98,4 +100,4 @@ if __name__ == "__main__":
 
     # print("recommendation: ", model.recommend_user(user=1, n_rec=7))
     # print("recommendation: ", model.recommend_user(user=1, n_rec=7))
-    # print("结束: ")
+    print("结束: ")

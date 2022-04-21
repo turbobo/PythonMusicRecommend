@@ -65,6 +65,12 @@ track_metadata_df = pd.read_sql(con=conn, sql='select * from songs')
 track_metadata_df = track_metadata_df[['track_id','duration']]
 
 songs = pd.merge(data,track_metadata_df,how='inner',on="track_id")
+userSave = songs.copy(deep=True)
+userSave = userSave[["user"]]
+userSave.drop_duplicates(subset=['user'],keep='first',inplace=True)
+userSave.to_csv("D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\\test\modelSave\deepfm_model_20\\userSave.csv",
+                encoding = 'utf_8_sig', index=False, sep=',')
+del(userSave)
 
 # 保存歌曲信息  --- 深复制，两份数据不影响  ---  保存为utf-8格式
 songsSave = songs.copy(deep=True)
