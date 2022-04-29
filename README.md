@@ -1,4 +1,4 @@
-### Python基于DeepFM实现音乐推荐
+### Python实现基于DeepFM模型的音乐推荐
 
 Get more information about the Millionsong project from https://labrosa.ee.columbia.edu/millionsong/
 Refer to Chapter 10: Section 'The Million Song Dataset Taste Profile' for more details
