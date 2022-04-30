@@ -32,6 +32,7 @@ user_item_rating_all_200w.csv  train_triplets.txt中的两百万数据直接计�
 
 
 ###最终版本
+
 data\metadata  元数据(百度网盘  毕业设计\模型训练数据  目录下)
 D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\test  目录
 librec_feat.py  模型训练文件
@@ -40,9 +41,11 @@ LibRecommender-master/test/04-19/testLoad.py 测试模型加载
 
 
 ###参考博客
+
 https://blog.csdn.net/kepengs/article/details/87621178
 
 音乐推荐引擎
+
 TRMMCBU128E0791823	Do You Know	SOSEDAW12A6701C8BB	Wake Up And Smell The Coffee	ARCBIPV1187B9AC2D1	c98d40fd-f6cf-4b26-883e-eaa515ee2851	The Cranberries	189.12608	0.830759465534	0.577364124179	2001	160212	-1	0
 TRCZHQJ128F42AE2BF	Shelter Me	SOKPRAY12A58A76F96	For Me_ It's You	ARICCZI1187B9AEBB3	bfd5aec5-62a2-4560-a316-7c46c17babda	Train	213.68118	0.838885951241	0.783677407954	2006	3471916	-1	0
 TRCIPHS128F9334536	Dangerous	SOULWEE12A6D4FA835	The Game & Posse	AR5UHAH1187B9A0B92	2e80ba15-ec0f-4bd4-b263-7e0671f38255	Ying Yang Twins ft. Wyclef Jean	259.65669	0.851064726891	0.538187420144	0	4092752	-1	0
