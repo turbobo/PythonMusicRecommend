@@ -1,4 +1,4 @@
-### Python实现音乐推荐
+### Python实现基于DeepFM模型的音乐推荐
 
 Get more information about the Millionsong project from https://labrosa.ee.columbia.edu/millionsong/
 Refer to Chapter 10: Section 'The Million Song Dataset Taste Profile' for more details
@@ -29,6 +29,15 @@ track_200w_full.csv   2052374条记录,train_triplets.txt中的两百万数据�
 user_item_rating_all_200w.csv  train_triplets.txt中的两百万数据直接计算得出的评分数据
 
 搜索“改进”
+
+
+###最终版本
+data\metadata  元数据(百度网盘  毕业设计\模型训练数据  目录下)
+D:\IdeaSpace\PythonMusicRecommend\LibRecommender-master\test  目录
+librec_feat.py  模型训练文件
+LibRecommender-master/test/04-19/testLoad.py 测试模型加载
+
+
 
 ###参考博客
 https://blog.csdn.net/kepengs/article/details/87621178
