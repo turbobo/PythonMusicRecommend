@@ -1,0 +1,18 @@
+{
+    "task":"rating",
+    "embed_size":16,
+    "n_epochs":1,
+    "lr":0.001,
+    "lr_decay":false,
+    "reg":null,
+    "batch_size":256,
+    "num_neg":1,
+    "use_bn":false,
+    "dropout_rate":0.5,
+    "hidden_units":"256,256,256",
+    "batch_sampling":false,
+    "multi_sparse_combiner":"sqrtn",
+    "seed":42,
+    "lower_upper_bound":null,
+    "tf_sess_config":null
+}

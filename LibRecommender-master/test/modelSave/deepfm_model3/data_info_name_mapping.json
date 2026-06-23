@@ -1,0 +1,18 @@
+{
+    "sparse_col":{
+        "song_year":0
+    },
+    "dense_col":{
+        "artist_hotttnesss":0,
+        "duration":1
+    },
+    "item_sparse_col":{
+        "song_year":0
+    },
+    "item_dense_col":{
+        "artist_hotttnesss":0,
+        "duration":1
+    },
+    "user_sparse_col":{},
+    "user_dense_col":{}
+}
