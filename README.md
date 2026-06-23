@@ -735,3 +735,81 @@ lightfm
 crab
 rec_sys
 ...
+
+---
+
+### 待优化项（TODO）
+
+#### 一、代码工程质量
+
+| 问题 | 现状 | 优化方向 |
+|------|------|----------|
+| 大量注释代码 | `recommend_test.py` 中超过40%是注释掉的废弃代码 | 清理无用注释，利用Git历史追踪旧代码 |
+| 缺乏模块化 | 数据加载、预处理、训练、推荐全写在一个文件 | 拆分为 `data_loader.py`、`preprocess.py`、`models/`、`evaluate.py` |
+| 路径硬编码 | `'data/metadata/track_200w.csv'` 等路径散布各处 | 使用配置文件（yaml/json）统一管理 |
+| 重复代码 | 数据加载逻辑在多个文件中重复 | 抽取公共数据处理模块 |
+| 缺少依赖管理 | 无 `requirements.txt` | 添加依赖版本锁定文件 |
+
+#### 二、性能优化
+
+1. **数据处理向量化**
+   - 当前使用 `for` 循环 + `groupby` 构建字典，应改为 `pandas` 向量化操作
+   - `data.apply(lambda ...)` 逐行计算改为 `map`/`merge` 方式，提速5-20倍
+
+2. **相似度计算加速**
+   - `Recommenders.py` 中双层 for 循环计算 Jaccard 相似度（O(n×m)）
+   - 改用 `scipy` 稀疏矩阵 + `sklearn.metrics.pairwise` 批量计算，提速10-100倍
+
+3. **内存优化**
+   - 大DataFrame及时 `del` 释放
+   - 使用 `category` 类型存储重复字符串列
+
+#### 三、算法改进
+
+| 方面 | 当前做法 | 优化方向 |
+|------|---------|----------|
+| 评分计算 | 播放次数占比，忽略时间衰减 | 加入时间衰减权重、隐式反馈建模（BPR损失） |
+| 冷启动 | 仅热度推荐 | 引入内容特征（artist_hotttnesss、year、tags）推荐 |
+| 负采样 | rating<0.7作为负样本 | 使用曝光未点击作为负样本，优化负采样策略 |
+| 特征利用 | DeepFM仅用5个稀疏特征 | 加入用户行为序列、标签embedding、上下文特征 |
+| 多路召回 | 无融合策略 | 实现加权融合/级联融合，引入多样性控制 |
+
+#### 四、评估体系
+
+当前仅用 RMSE/AUC 单一指标，建议补充：
+- 排序指标：Recall@K, Precision@K, NDCG@K, MAP
+- 覆盖率：推荐结果覆盖了多少歌曲
+- 多样性：推荐列表内歌曲的差异度
+- 离线/在线一致性评估框架
+
+#### 五、工程架构建议
+
+```
+建议目录结构：
+├── config/
+│   └── settings.yaml          # 统一配置
+├── data/
+│   └── loader.py              # 数据加载
+├── features/
+│   └── engineering.py         # 特征工程
+├── models/
+│   ├── recall/                # 召回模型
+│   │   ├── item_cf.py
+│   │   ├── svd.py
+│   │   └── youtube_dnn.py
+│   └── rank/                  # 排序模型
+│       ├── gbdt_lr.py
+│       └── deepfm.py
+├── evaluation/
+│   └── metrics.py             # 评估指标
+├── pipeline.py                # 完整流水线
+└── requirements.txt
+```
+
+#### 六、快速见效 Top 5
+
+1. 清理 `recommend_test.py` — 删除注释代码，拆分为独立模块
+2. 向量化数据处理 — 替换 `for` 循环 + `apply`，预计提速5-20倍
+3. 稀疏矩阵计算相似度 — 替换 `Recommenders.py` 中的双重循环
+4. 补充 tags 特征到 DeepFM — 当前未利用标签数据
+5. 添加完整评估框架 — 引入 Recall@K / NDCG@K 等排序指标
